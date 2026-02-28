@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<link href='https://short-url.org/1pNvK.png' rel='icon' type='image/png'/>
+<link href='https://short-url.org/1pNvK.png' rel='icon' sizes='192x192'/>
+<link href='https://short-url.org/1pNvK.png' rel='apple-touch-icon' sizes='180x180'/>
+<link href='manifest.json' rel='manifest'/> 
+<meta content='https://short-url.org/1pNvK' name='msapplication-TileImage'/>
+<meta content='#00a2e9' name='theme-color'/> 
+<meta content='#00a2e9' name='theme-color'/>
+<meta content='#00a2e9' name='msapplication-navbutton-color'/>
+<meta content='yes' name='mobile-web-app-capable'/>
+<meta content='#00a2e9' name='apple-mobile-web-app-status-bar-style'/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"/>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/finansial148/editorgue@main/style-pusat.css">
+    <title>Pengluaran Harian</title>
+  <h2 class="judul">Pengluaran Harian</h2>
+  <style>
+
+  </style>
+  </head>
+  <body>
+    
+      <div class="container">
+    <h2 class="judul" style="color: #d32f2f;"><i class="fa fa-shopping-cart"></i> Pengeluaran Harian</h2>
+
+    <div class="card-data" style="display: block; border-left: 5px solid #d32f2f;">
+        <input type="text" id="ketKeluar" placeholder="Beli apa hari ini?" style="width: 100%; padding: 10px; margin-bottom: 10px; border-radius: 8px; border: 1px solid #ddd;">
+        <input type="number" id="nomKeluar" placeholder="Jumlah Rp" style="width: 100%; padding: 10px; margin-bottom: 10px; border-radius: 8px; border: 1px solid #ddd;">
+        
+        <label style="font-size: 0.8rem; color: #666; display: flex; align-items: center; gap: 5px; cursor: pointer;">
+            <input type="checkbox" id="isModal"> Centang jika ini "Pengembalian Modal"
+        </label>
+        
+        <button onclick="tambahPengeluaran()" class="btn btn-pengeluaran" style="width: 100%; margin-top: 10px; justify-content: center;">
+            Simpan Pengeluaran
+        </button>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 20px;">
+        <div class="card-data" style="flex-direction: column; align-items: flex-start;">
+            <span class="text-tgl">Total Keluar</span>
+            <span class="text-harga" id="totalKeluar">Rp 0</span>
+        </div>
+        <div class="card-data" style="flex-direction: column; align-items: flex-start; border-left-color: #f39c12;">
+            <span class="text-tgl">Balik Modal</span>
+            <span class="text-harga" id="totalBalikModal">Rp 0</span>
+        </div>
+    </div>
+
+    <ul id="listKeluar" style="list-style: none; padding: 0; margin-top: 20px;">
+        </ul>
+</div>
+<div class="bottom-nav">
+    <a href="index.html" class="nav-item">
+        <i class="fa fa-home"></i>
+        <span>Home</span>
+    </a>
+    <a href="pemasukan.html" class="nav-item">
+        <i class="fas fa-hand-holding-usd"></i>
+        <span>Masukan</span>
+    </a>
+    <a href="pengeluaran.html" class="nav-item">
+        <i class="fas fa-shopping-cart"></i>
+        <span>Keluaran</span>
+    </a>
+    <a href="bagi-hasil.html" class="nav-item active">
+        <i class="fa fa-calculator"></i>
+        <span>Laba</span>
+    </a>
+    <a href="arsip.html" class="nav-item">
+        <i class="fa fa-archive"></i>
+        <span>Arsip</span>
+    </a>
+</div>
+  <script>
+    let dbPengeluaran = JSON.parse(localStorage.getItem('db_keluar')) || [];
+
+function tambahPengeluaran() {
+    let ket = document.getElementById('ketKeluar').value;
+    let nom = parseInt(document.getElementById('nomKeluar').value);
+    let isModal = document.getElementById('isModal').checked; // Cek apakah centang modal
+    let tgl = new Date().toLocaleDateString('id-ID');
+
+    if (ket && nom) {
+        let dataBaru = {
+            key: Date.now(),
+            tanggal: tgl,
+            keterangan: isModal ? "REKAP MODAL: " + ket : ket, // Tandai jika modal
+            jumlah: nom,
+            tipe: isModal ? "modal" : "biasa"
+        };
+
+        dbPengeluaran.unshift(dataBaru);
+        localStorage.setItem('db_keluar', JSON.stringify(dbPengeluaran));
+        
+        // Reset form
+        document.getElementById('ketKeluar').value = "";
+        document.getElementById('nomKeluar').value = "";
+        document.getElementById('isModal').checked = false;
+
+        tampilkanKeluar();
+    } else {
+        alert("Isi dulu keterangannya, Bang!");
+    }
+}
+
+function tampilkanKeluar() {
+    let html = "";
+    let total = 0;
+    let modal = 0;
+
+    dbPengeluaran.forEach(item => {
+        total += item.jumlah;
+        if(item.tipe === "modal") modal += item.jumlah;
+
+        html += `
+        <li class="card-data ${item.tipe === 'modal' ? '' : 'card-pengeluaran'}">
+            <div>
+                <span class="text-tgl">${item.tanggal}</span><br>
+                <span class="text-harga" style="${item.tipe === 'modal' ? 'color:#f39c12' : ''}">${item.keterangan}</span>
+            </div>
+            <div style="text-align: right;">
+                <span class="text-harga">Rp ${item.jumlah.toLocaleString()}</span><br>
+                <span onclick="hapusKeluar(${item.key})" style="color:red; cursor:pointer; font-size:0.8rem;"><i class="fa fa-trash"></i></span>
+            </div>
+        </li>`;
+    });
+
+    document.getElementById('listKeluar').innerHTML = html;
+    document.getElementById('totalKeluar').innerText = "Rp " + total.toLocaleString();
+    document.getElementById('totalBalikModal').innerText = "Rp " + modal.toLocaleString();
+}
+
+function hapusKeluar(key) {
+    dbPengeluaran = dbPengeluaran.filter(item => item.key !== key);
+    localStorage.setItem('db_keluar', JSON.stringify(dbPengeluaran));
+    tampilkanKeluar();
+}
+
+// Jalankan saat halaman dibuka
+tampilkanKeluar();
+  </script>
+  </body>
+</html>

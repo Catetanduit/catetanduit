@@ -1,0 +1,873 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<link href='https://short-url.org/1pNvK.png' rel='icon' type='image/png'/>
+<link href='https://short-url.org/1pNvK.png' rel='icon' sizes='192x192'/>
+<link href='https://short-url.org/1pNvK.png' rel='apple-touch-icon' sizes='180x180'/>
+<link href='manifest.json' rel='manifest'/> 
+<meta content='https://short-url.org/1pNvK' name='msapplication-TileImage'/>
+<meta content='#00a2e9' name='theme-color'/> 
+<meta content='#00a2e9' name='theme-color'/>
+<meta content='#00a2e9' name='msapplication-navbutton-color'/>
+<meta content='yes' name='mobile-web-app-capable'/>
+<meta content='#00a2e9' name='apple-mobile-web-app-status-bar-style'/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"/>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/finansial148/editorgue@main/style-pusat.css">    
+  
+    <title>Arsip Data</title>
+<style>
+ .awalan {
+    position: fixed;z-index:9;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    background: white;
+} 
+.dada_tengah {
+    border:0px solid;
+    padding: 10px;
+    max-width: 500px;
+    margin: auto;
+    /* Pastikan padding tidak menambah lebar total */
+    box-sizing: border-box; 
+}
+
+/* 1. Paksa tabel mengikuti lebar div */
+.dada_tengah table {
+    width: 100%;
+    border-collapse: collapse; /* Biar border antar sel rapi */
+    table-layout: fixed;      /* Paksa kolom nurut sama lebar yang kita tentukan */
+}
+
+/* 2. Semua input & textarea di dalam div harus nurut lebar box-nya */
+.dada_tengah input[type="text"],
+.dada_tengah input[type="number"],
+.dada_tengah textarea {
+    width: 100%; 
+    box-sizing: border-box; /* WAJIB: biar padding input nggak bikin dia tembus keluar */
+    display: block;
+}
+
+/* 3. Atur proporsi kolom (Nama Produk lebar, Harga & Pcs menyesuaikan) */
+.dada_tengah td:nth-child(1) { width: 50%; } /* Nama Produk */
+.dada_tengah td:nth-child(2) { width: 30%; } /* Harga */
+.dada_tengah td:nth-child(3) { width: 20%; } /* PCS */
+
+/* CSS Abang yang tadi bisa dihapus/diganti dengan yang lebih simpel ini */
+#txtNome {
+    margin-bottom: 10px;
+}
+
+textarea {
+    margin-top: 10px;
+    height: 80px;
+}
+ button.tbl-Eedt {
+    border: 1px solid #0000006b;
+    padding: 10px 20px;
+    border-radius: 5px;
+    background: blue;
+    color: white;
+} 
+  
+  #output4b {
+    white-space: pre-wrap; /* Ini kuncinya, Bang! */
+    word-wrap: break-word; /* Biar kalau kepanjangan nggak bablas ke kanan */
+    border: 1px solid #ccc; /* Opsional, biar kelihatan batasnya */
+    padding: 10px;margin-bottom: 10px;
+}
+  .nota_opik2{border:0px solid;padding:5px;max-width:400px;margin:auto;}
+  .banner {
+    border:0px solid;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+}
+ img.thumb {
+    width: 60px;
+    height: 60px;
+    border: 0;
+    box-shadow: none;
+} 
+  #tokoku i.fa.fa-trash,#KETsahaKu opik,#ALmtUsaHA i.fa.fa-trash,#RekininG i.fa.fa-trash,#NamaKU i.fa.fa-trash,span#Resmi opik {
+    display: none;
+}
+  #namausaha,#jenisusaha,#alamtusaha,#nomrek,#nampri {
+    display: flex;
+    justify-content: space-between;
+}
+  .kolom-bawah {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+  canvas#signatureCanvas {
+    border: 1px solid;
+}
+td.isi_01, td.isi_02, td.isi_03 {
+    font-size: 12px;
+    border-bottom: 1px solid #7e78783b;
+    height: 15px;
+}
+  .wsimg,.kotak{display:none;}
+  .ttd,label#customButton {
+    border: 1px solid;
+    padding: 5px 30px;border-radius: 5px;
+    background:#2196F3;color:white;
+}
+  .pengaturan button {
+    background: yellow;
+    border: 1px solid #00000061;
+    border-radius: 3px;
+}
+</style>
+<style id="memo"></style><style id="memo1"></style>
+  </head>
+  <body>
+<div class="awalan">
+  <div class="dada_tengah">
+       <input id="txtNome" onkeyup="output1a.value=this.value" type="text" placeholder="Customer"/>
+<table border="0">
+    <tr>
+      <td style="border: 0px solid;text-align: center;">NAMA PRODUK</td><td style="border: 0px solid;text-align: center;width:30%;">HARGA</td><td style="border: 0px solid;text-align: center;">PCS</td>
+    </tr>
+    <tr>
+      <td><input class="prd1" onkeyup="output1b.value=this.value" type="text" placeholder="Jenis"/></td><td><input id="ajang" type="number" value="" onkeyup="output2b.value=this.value" /></td><td><input id="bjang" type="number" value="" onkeyup="output3b.value=this.value" /></td>
+    </tr>
+    <tr>
+      <td><input class="prd2" onkeyup="output1c.value=this.value" type="text" placeholder="Jenis"/></td><td><input id="cjang" type="number" value="" onkeyup="output2c.value=this.value" /></td><td><input id="djang" type="number" value="" onkeyup="output3c.value=this.value"/></td>
+    </tr>
+    <tr>
+      <td><input class="prd3" onkeyup="output1d.value=this.value" type="text" placeholder="Jenis"/></td><td><input id="ejang" type="number" value="" onkeyup="output2d.value=this.value" /></td><td><input id="fjang" type="number" value="" onkeyup="output3d.value=this.value"/></td>
+    </tr>
+    <tr>
+      <td><input class="prd4" onkeyup="output1e.value=this.value" type="text" placeholder="Jenis"/></td><td><input id="gjang" type="number" value="" onkeyup="output2e.value=this.value" /></td><td><input id="ijang" type="number" value="" onkeyup="output3e.value=this.value"/></td>
+    </tr>
+    <tr>
+      <td><input class="prd5" onkeyup="output1f.value=this.value" type="text" placeholder="Jenis"/></td><td><input id="jjang" type="number" value="" onkeyup="output2f.value=this.value" /></td><td><input id="kjang" type="number" value="" onkeyup="output3f.value=this.value"/></td>
+    </tr>
+    <tr>
+      <td><input class="prd6" onkeyup="output1g.value=this.value" type="text" placeholder="Jenis"/></td><td><input id="mjang" type="number" value="" onkeyup="output2g.value=this.value" /></td><td><input id="njang" type="number" value="" onkeyup="output3g.value=this.value"/></td>
+    </tr>
+    <tr>
+      <td><input class="prd7" onkeyup="output1h.value=this.value" type="text" placeholder="Jenis"/></td><td><input id="ojang" type="number" value="" onkeyup="output2h.value=this.value" /></td><td><input id="qjang" type="number" value="" onkeyup="output3h.value=this.value"/></td>
+    </tr>
+    <tr>
+      <td><input class="prd8" onkeyup="output1i.value=this.value" type="text" placeholder="Jenis"/></td><td><input id="rjang" type="number" value="" onkeyup="output2i.value=this.value" /></td><td><input id="sjang" type="number" value="" onkeyup="output3i.value=this.value"/></td>
+    </tr>
+    <tr>
+      <td><input class="prd9" onkeyup="output1j.value=this.value" type="text" placeholder="Jenis"/></td><td><input id="ujang" type="number" value="" onkeyup="output2j.value=this.value" /></td><td><input id="wjang" type="number" value="" onkeyup="output3j.value=this.value"/></td>
+    </tr>
+    <tr>
+      <td><input class="prd10" onkeyup="output1k.value=this.value" type="text" placeholder="Jenis"/></td><td><input id="xjang" type="number" value="" onkeyup="output2k.value=this.value" /></td><td><input id="yjang" type="number" value="" onkeyup="output3k.value=this.value"/></td>
+    </tr>
+    <tr>
+  <td><input class="btn1" id="cara" onclick="caravolum()" type="button" value="TOTAL Rp:" />
+  </td>
+ <td colspan="2" style="border: 1px solid#c9c7c7;;border-radius: 3px;" valign="top"><input id="volum" type="text" value="0" style="background: transparent;border: 0;"/>
+  </td>
+    </tr>
+  </table>
+    <div id="3">
+        <textarea id="keterangan" onkeyup="ak()" type="text" placeholder="keterangan"></textarea>
+   </div>
+    </div>
+<button onclick="editnota()" class="tbl-Eedt">Edit Nota</button><buttoni onclick="cetak()"class="btn btn-pemasukan">Simpan dan cetak</buttoni><button onclick="klaporan()" class="tbl-Eedt">Laporang p</button>
+<button onclick="reset_counter3()" style="display:none;">Reset</button>
+  <button type="button" onclick="simpanKeDrive()" style="padding: 10px 20px; background-color: #2196F3; color: white; border: none; cursor: pointer;">
+  Simpan Riwayat ke Google Drive
+</button>
+  <hr>
+<h3>Riwayat Nota (Simulasi)</h3>
+<table border="1" id="tabelRiwayat" style="width: 100%; border-collapse: collapse;">
+    <thead>
+        <tr style="background: #eee;">
+            <th>Customer</th>
+            <th>Total (Rp)</th>
+            <th>Aksi</th>
+        </tr>
+    </thead>
+    <tbody id="isiRiwayat">
+        </tbody>
+</table>
+
+<button onclick="simpanKeRiwayat()" style="margin-top: 10px; padding: 10px; width: 100%;">SIMPAN NOTA KE RIWAYAT</button>
+</div>
+<div style="border:1px solid #0000005e;height: 300px;overflow: overlay;padding: 10px;margin-bottom: 10px;">
+ <screenshot>
+    <div class="nota_opik2">
+      <div class="banner">
+      <div class="bannerlogo"><output id="list"></output></div>
+      <div class="bannerusaha">
+        <div class="tinggi"></div>
+        <div id="tokoku"></div>
+        <div id="KETsahaKu"></div>
+        </div>
+        
+      <div class="bannerstatus" style="font-size: 12px;">
+        <spanFA>NOTA</spanFA>
+               <div class="notak">Nmr : <w id="counter3"></w></div>
+             <div>Tgl : <w id="para1"></w></div>
+        <kepada>Kpd : <output id="output1a"></output></kepada>
+        </div>        
+      </div>
+        <div id="ALmtUsaHA" style="font-size: 12px;"></div>           
+    <table border="0" class="opik2" style="padding:0;margin:0;width: 100%;">
+    <tr style="background: #0000001f;">
+     <td class="isi_1"><spanha>Jenis</spanha></td><td class="isi_2"><spanha>Harga</spanha></td><td class="isi_3"><spanha>pcs</spanha></td>
+    </tr>
+    <tr>
+     <td class="isi_01"><output id="output1b"></output></td><td class="isi_02"><output id="output2b"></output></td><td class="isi_03"><output id="output3b"></output></td>
+    </tr>
+    <tr class="WRNisi">
+     <td class="isi_01"><output id="output1c"></output></td><td class="isi_02"><output id="output2c"></output></td><td class="isi_03"><output id="output3c"></output></td>
+    </tr>
+    <tr>
+     <td class="isi_01"><output id="output1d"></output></td><td class="isi_02"><output id="output2d"></output></td><td class="isi_03"><output id="output3d"></output></td>
+    </tr>
+    <tr class="WRNisi">
+     <td class="isi_01"><output id="output1e"></output></td><td class="isi_02"><output id="output2e"></output></td><td class="isi_03"><output id="output3e"></output></td>
+    </tr>
+    <tr>
+     <td class="isi_01"><output id="output1f"></output></td><td class="isi_02"><output id="output2f"></output></td><td class="isi_03"><output id="output3f"></output></td>
+    </tr>
+    <tr class="WRNisi">
+     <td class="isi_01"><output id="output1g"></output></td><td class="isi_02"><output id="output2g"></output></td><td class="isi_03"><output id="output3g"></output></td>
+    </tr>
+    <tr>
+     <td class="isi_01"><output id="output1h"></output></td><td class="isi_02"><output id="output2h"></output></td><td class="isi_03"><output id="output3h"></output></td>
+    </tr>
+    <tr class="WRNisi">
+     <td class="isi_01"><output id="output1i"></output></td><td class="isi_02"><output id="output2i"></output></td><td class="isi_03"><output id="output3i"></output></td>
+    </tr>
+    <tr>
+     <td class="isi_01"><output id="output1j"></output></td><td class="isi_02"><output id="output2j"></output></td><td class="isi_03"><output id="output3j"></output></td>
+    </tr>
+    <tr class="WRNisi">
+     <td class="isi_01"><output id="output1k"></output></td><td class="isi_02"><output id="output2k"></output></td><td class="isi_03"><output id="output3k"></output></td>
+    </tr>
+    <tr>
+     <td class="isi_01" style="width: 200px;border:0;">Total</td><td colspan="2" valign="top" width="125" class="totali"><w id="nilay" style="position:relative;margin:5px;"></w></td>
+    </tr>
+    </table>
+      <div id="RekininG"></div>
+    <div class="keterangan">      
+    <u style="color: #0000004d;font-size: 13px;">Keterangan:</u>
+<div id="output4b"></div>
+  </div>
+      <div style="display: flex;justify-content: flex-end;">
+      <div class="kolom-bawah">
+        <div style="color: #0000004d;font-size: 13px;">Hormat kami</div>       
+        <img id="output-image" style="width: 100px;border: 0;box-shadow: none;" src="" alt="Output Tanda Tangan">
+        <div id="NamaKU"></div>
+      </div>
+      </div>
+      <div class="tanda" style="font-size: 10px;color: #00000040;">Nota resmi - App x2558 - Nota Dibuat oleh <span id="Resmi"></span></div>
+</div>
+      </screenshot>
+</div>
+<div style="border: 1px solid #0000005e;height: 300px;overflow: overlay;padding: 10px;">
+<div class="pengaturan" style="max-width: 500px;margin: auto;">
+  <div style="display: flex;justify-content: space-between;align-items: center;">
+    <label for="files" id="customButton">
+        Pilih Logo
+    </label>    
+    <input accept="image/*" type="file" id="files" name="files[]" multiple style="display: none;" onchange="updateButtonText(this.files)">
+    <span id="fileNameDisplay" style="margin-left: 10px; color: #555;"></span><span onclick="hapus6()" class="wsimg"><i class="fa fa-trash"></i></span> 
+  </div>
+  <div class="nama-usaha">
+    <div id="namausaha"></div>
+    <wb>
+  <input id="usaha" type="text" placeholder="Nama usaha" value=""/>
+        <button onclick="usahaku()" class="ws1">Kirim</button>
+    </wb>
+  </div>
+  <div class="jenis-usaha">
+    <div id="jenisusaha"></div>
+  <w1>
+        <input id="Kusaha" type="text" placeholder="Keterangan usaha" value=""/>
+        <button onclick="KETusaha()" class="ws1">Kirim</button>
+  </w1>
+  </div>
+  <div class="alamat-usaha">
+    <div id="alamtusaha"></div>
+  <wd>
+        <input id="alamat" type="text" placeholder="Alamat usaha" value=""/>
+        <button onclick="AlamatUS()" class="ws1">Kirim</button>
+  </wd>
+  </div>
+  <div class="nom-rek">
+    <div id="nomrek"></div>
+  <we>
+        <input id="rek" type="text" placeholder="Nomor rekning" value=""/>
+        <button onclick="reken()" class="ws1">Kirim</button>
+  </we> 
+</div>
+  <div class="nam-pri">
+    <div id="nampri"></div>
+  <wc>
+        <input id="nama" type="text" placeholder="Nama pribadi" value=""/>
+        <button onclick="NamaPri()" class="ws1">Kirim</button>
+  </wc>
+    </div>
+ <input type="button" value="Tanda tangan" onclick="tutupKolom('kotak')" class="ttd">  
+  <div class="kotak">
+    <input type="reset" value="tutup" onclick="resetTampilan()">
+    <div id="canvas-container">
+        <canvas id="signatureCanvas" width="300" height="400"></canvas>
+    </div>
+    <div class="controls">
+        <button id="clearBtn">Bersihkan</button>
+        <button id="saveBtn">Simpan</button>
+    </div>
+    <div id="custom-notification">Tanda tangan berhasil disimpan!</div>
+  </div>
+  </div>
+</div>
+<div class="bottom-nav">
+    <a href="index.html" class="nav-item">
+        <i class="fa fa-home"></i>
+        <span>Home</span>
+    </a>
+    <a href="pemasukan.html" class="nav-item">
+        <i class="fas fa-hand-holding-usd"></i>
+        <span>Masukan</span>
+    </a>
+    <a href="pengeluaran.html" class="nav-item">
+        <i class="fas fa-shopping-cart"></i>
+        <span>Keluaran</span>
+    </a>
+    <a href="bagi-hasil.html" class="nav-item active">
+        <i class="fa fa-calculator"></i>
+        <span>Laba</span>
+    </a>
+    <a href="arsip.html" class="nav-item">
+        <i class="fa fa-archive"></i>
+        <span>Arsip</span>
+    </a>
+</div>
+ <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script>
+  /*==================================
+           INPUT NOTA 
+ ===========================================*/
+function caravolum() {
+  const baris = [
+    { h: 'ajang', p: 'bjang' }, { h: 'cjang', p: 'djang' },
+    { h: 'ejang', p: 'fjang' }, { h: 'gjang', p: 'ijang' },
+    { h: 'jjang', p: 'kjang' }, { h: 'mjang', p: 'njang' },
+    { h: 'ojang', p: 'qjang' }, { h: 'rjang', p: 'sjang' },
+    { h: 'ujang', p: 'wjang' }, { h: 'xjang', p: 'yjang' }
+  ];
+
+  let totalKeseluruhan = 0;
+
+  baris.forEach(item => {
+    // Ambil value sebagai string dulu
+    let valHarga = document.getElementById(item.h).value.toString();
+    let valPcs = document.getElementById(item.p).value.toString();
+
+    // Bersihkan titik (.) supaya jadi angka murni
+    // Kita pakai replace(/\./g, '') supaya semua titik hilang
+    let hargaBersih = parseFloat(valHarga.replace(/\./g, '')) || 0;
+    let pcsBersih = parseFloat(valPcs.replace(/\./g, '')) || 0;
+    
+    totalKeseluruhan += (hargaBersih * pcsBersih);
+  });
+
+  // Tampilkan dengan format titik lagi buat estetikanya
+  document.getElementById('volum').value = totalKeseluruhan.toLocaleString('id-ID');
+  document.getElementById('nilay').innerHTML = totalKeseluruhan.toLocaleString('id-ID');
+}
+// kirim total ke nota
+  function ak(){
+    const kosng = document.getElementById('keterangan').value;
+   document.getElementById('output4b').innerHTML =kosng;
+  }
+  
+  
+  /*==================================
+               PENGATURAN
+  ====================================*/
+  //logo
+      function handleFileSelect(evt) {
+      // Hapus konten yang ada sebelum menambahkan gambar baru
+      document.getElementById('list').innerHTML = '';
+
+      var files = evt.target.files; // FileList object
+
+      // Loop through the FileList and render image files as thumbnails.
+      for (var i = 0, f; f = files[i]; i++) {
+
+        // Only process image files.
+        if (!f.type.match('image.*')) {
+          continue;
+        }
+
+        var reader = new FileReader();
+
+        // Closure to capture the file information.
+        reader.onload = (function(theFile) {
+          return function(e) {
+            // Render thumbnail.
+            var span = document.createElement('span');
+            // Beri ID unik agar mudah dihapus, atau hapus semua isi 'list'
+            span.innerHTML = ['<img class="thumb" src="', e.target.result,
+                              '" title="', escape(theFile.name), '"/>'].join('');
+
+            document.getElementById('list').insertBefore(span, null);
+            localStorage.setItem('img', e.target.result);
+          };
+        })(f);
+
+        // Read in the image file as a data URL.
+        reader.readAsDataURL(f);
+      }
+    }
+
+    document.getElementById('files').addEventListener('change', handleFileSelect, false);
+
+    // --- Pemanggilan awal untuk menampilkan gambar dari localStorage ---
+    if (localStorage.img) {
+      var span = document.createElement('span');
+      span.innerHTML += ['<img class="thumb" src="', localStorage.img,
+        '" title="test"/><style>.wsimg{display:block;}</style>'
+      ].join('');
+
+      document.getElementById('list').insertBefore(span, null);
+    }
+
+    // --- Fungsi yang DIBARUI untuk menghapus gambar dan localStorage ---
+    function hapus6() {
+      // 1. Hapus data dari localStorage
+      localStorage.removeItem('img');
+
+      // 2. Hapus elemen gambar dari tampilan (DOM)
+      // Menghapus semua konten di dalam elemen <output id="list"></output>
+      document.getElementById('list').innerHTML = '';
+
+      // Opsional: Reset input file agar gambar yang sama bisa di-upload lagi
+      document.getElementById('files').value = '';
+    }
+    // ------------------------------------------------------------------
+  
+  //Nama usaha
+          function usahaku() {
+            var wb = document.getElementById("usaha").value ;
+            const toko = document.getElementById("tokoku").innerHTML = "<spanx>" + wb +"</spanx><opik onclick='hapus1()'><i class='fa fa-trash'></i><opik><style>wb{display:none;}</style>";
+            localStorage.setItem('NamaUsahaku', toko);
+         
+            NUsahaAku();
+        }
+      
+        function NUsahaAku() {
+            const saveWb = localStorage.getItem('NamaUsahaku');
+            document.getElementById('tokoku').innerHTML =  saveWb ? saveWb : '' ;
+          namausaha.innerHTML =  saveWb ? saveWb : '' ;
+          Resmi.innerHTML =  saveWb ? saveWb : '' ;
+        }
+      
+        function hapus1() {
+            localStorage.removeItem('NamaUsahaku');
+            NUsahaAku(); // Panggil fungsi displayData untuk memperbarui tampilan
+        }      
+        NUsahaAku();
+  
+  
+  // dibawah ini script jenis usaha
+        function KETusaha() {
+            var wc = document.getElementById("Kusaha").value ;
+            const USHa = document.getElementById("KETsahaKu").innerHTML = "" + wc +"<opik onclick='hapus2()'><i class='fa fa-trash' id='t5'></i><opik><style>w1{display:none;}</style>";
+            localStorage.setItem('KETRANGAN_USAHA', USHa);
+         
+            ketrangnUsaha();
+        }
+      
+        function ketrangnUsaha() {
+            const Ws = localStorage.getItem('KETRANGAN_USAHA');
+            document.getElementById('KETsahaKu').innerHTML =  Ws ? Ws : '' ;
+          jenisusaha.innerHTML =  Ws ? Ws : '' ;
+        }
+      
+        function hapus2() {
+            localStorage.removeItem('KETRANGAN_USAHA');
+            ketrangnUsaha();
+        }      
+        ketrangnUsaha();
+  
+  // ini script keempat --alamat
+       
+        function AlamatUS() {
+            var wd = document.getElementById("alamat").value ;
+            const usAKU = document.getElementById("ALmtUsaHA").innerHTML = "<opik>" + wd +"</opik><opik onclick='hapus4()'><i class='fa fa-trash'></i><opik><style>wd{display:none;}</style>";
+            localStorage.setItem('ALAMAT_USAHA', usAKU);
+         
+            alamatusaha();
+        }
+      
+        function alamatusaha() {
+            const saveWd = localStorage.getItem('ALAMAT_USAHA');
+            document.getElementById('ALmtUsaHA').innerHTML =  saveWd ? saveWd : '' ;
+          alamtusaha.innerHTML =  saveWd ? saveWd : '' ;
+        }
+      
+        function hapus4() {
+            localStorage.removeItem('ALAMAT_USAHA');
+            alamatusaha();
+        }      
+        alamatusaha();
+  
+  
+       // ini script kelima --nomor rekening untuk nota
+       
+        function reken() {
+            var we = document.getElementById("rek").value ;
+            const norek = document.getElementById("RekininG").innerHTML = "<opik>REK " + we +"</opik><opik onclick='hapus5()'><i class='fa fa-trash' id='t5'></i><opik><style>we{display:none;}</style>";
+            localStorage.setItem('NOMOR_REK', norek);
+         
+            nomorrek();
+        }
+      
+        function nomorrek() {
+            const rekKu = localStorage.getItem('NOMOR_REK');
+            document.getElementById('RekininG').innerHTML =  rekKu ? rekKu : '' ;
+          nomrek.innerHTML =  rekKu ? rekKu : '' ;
+        }
+      
+        function hapus5() {
+            localStorage.removeItem('NOMOR_REK');
+            nomorrek(); // Panggil fungsi displayData untuk memperbarui tampilan
+        }      
+        nomorrek();
+  
+  // ini script ketiga --nama pribadi
+       
+        function NamaPri() {
+            var wc = document.getElementById("nama").value ;
+            const NaAku = document.getElementById("NamaKU").innerHTML = "<opik>" + wc +"</opik><opik onclick='hapus3()'><i class='fa fa-trash' id='t5'></i><opik><style>wc{display:none;}</style>";
+            localStorage.setItem('NAMA_PRIBADI', NaAku);
+         
+            namapribadi();
+        }
+      
+        function namapribadi() {
+            const saveWc = localStorage.getItem('NAMA_PRIBADI');
+            document.getElementById('NamaKU').innerHTML =  saveWc ? saveWc : '' ;
+          nampri.innerHTML =  saveWc ? saveWc : '' ;
+        }
+      
+        function hapus3() {
+            localStorage.removeItem('NAMA_PRIBADI');
+            namapribadi();
+        }      
+        namapribadi();
+  
+ 
+  /*==============================
+  DOWNLOAD NOTA
+  ==================================*/
+    const srcElement = document.querySelector("screenshot"),
+  btns = document.querySelectorAll("buttoni");
+
+  btns.forEach(btn => { // looping through each btn
+    // adding click event to each btn
+    btn.addEventListener("click", () => {
+      // creating canvas of element using html2canvas
+      html2canvas(srcElement).then(canvas => {
+        // adding canvas/screenshot to the body
+        if(btn.id === "take-src-only") {
+          return document.body.appendChild(canvas);
+        }
+
+        // downloading canvas/screenshot
+        const a = document.createElement("a");
+        a.href = canvas.toDataURL();
+        a.download = "Nota kontan.jpg";
+        a.click();
+      });
+    });
+  });
+  
+  
+  /*==========================================
+  TANDATANGAN
+  =========================================*/
+          const canvas = document.getElementById('signatureCanvas');
+        // PERBAIKAN: Atur ukuran canvas di JavaScript jika belum ada di HTML
+        // Jika Anda mengatur di HTML (width="300" height="400"), baris ini tidak akan mengubahnya.
+        // Jika Anda ingin mengaturnya di sini, hapus atribut width/height dari HTML.
+        // Contoh default (jika tidak ada di HTML):
+        if (!canvas.width || !canvas.height) {
+            canvas.width = 300; 
+            canvas.height = 400; 
+        }
+
+        const ctx = canvas.getContext('2d');
+        const clearBtn = document.getElementById('clearBtn');
+        const saveBtn = document.getElementById('saveBtn');
+        const outputImage = document.getElementById('output-image');
+        const notification = document.getElementById('custom-notification');
+
+        let isDrawing = false;
+        let lastX = 0;
+        let lastY = 0;
+
+        ctx.strokeStyle = '#000';
+        ctx.lineWidth = 2;
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+
+        // Fungsi untuk membersihkan kanvas
+        function clearCanvas() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+
+        function draw(e) {
+            if (!isDrawing) return;
+            ctx.beginPath();
+            ctx.moveTo(lastX, lastY);
+            ctx.lineTo(e.offsetX, e.offsetY);
+            ctx.stroke();
+            [lastX, lastY] = [e.offsetX, e.offsetY];
+        }
+
+        // Fungsi untuk menampilkan notifikasi kustom
+        function showNotification(message) {
+            notification.textContent = message;
+            notification.classList.add('show');
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000); // Notifikasi akan hilang setelah 3 detik
+        }
+
+        // Event listener untuk mouse
+        canvas.addEventListener('mousedown', (e) => {
+            isDrawing = true;
+            [lastX, lastY] = [e.offsetX, e.offsetY];
+        });
+        canvas.addEventListener('mousemove', draw);
+        canvas.addEventListener('mouseup', () => isDrawing = false);
+        canvas.addEventListener('mouseout', () => isDrawing = false);
+
+        // Event listener untuk sentuhan (touch)
+        canvas.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            isDrawing = true;
+            const touch = e.touches[0];
+            const rect = canvas.getBoundingClientRect();
+            lastX = touch.clientX - rect.left;
+            lastY = touch.clientY - rect.top;
+        });
+        canvas.addEventListener('touchmove', (e) => {
+            e.preventDefault();
+            if (!isDrawing) return;
+            const touch = e.touches[0];
+            const rect = canvas.getBoundingClientRect();
+            const currentX = touch.clientX - rect.left;
+            const currentY = touch.clientY - rect.top;
+            ctx.beginPath();
+            ctx.moveTo(lastX, lastY);
+            ctx.lineTo(currentX, currentY);
+            ctx.stroke();
+            lastX = currentX;
+            lastY = currentY;
+        });
+        canvas.addEventListener('touchend', () => isDrawing = false);
+
+        // Event listener untuk tombol 'Bersihkan'
+        clearBtn.addEventListener('click', () => {
+            clearCanvas();
+            outputImage.src = '';
+            localStorage.removeItem('savedSignature');
+            showNotification('Kanvas berhasil dibersihkan!');
+        });
+
+        // Event listener untuk tombol 'Simpan & Tampilkan'
+        saveBtn.addEventListener('click', () => {
+            const imageData = canvas.toDataURL('image/png');
+            localStorage.setItem('savedSignature', imageData);
+            outputImage.src = imageData;
+            
+            // Notifikasi dan mengosongkan kanvas setelah disimpan
+            showNotification('Tanda tangan berhasil disimpan!');
+            clearCanvas();
+        });
+
+        // Muat tanda tangan dari LocalStorage saat halaman dimuat
+        // PERBAIKAN: Mengganti 'window1' menjadi 'window'
+        window.addEventListener('load', () => {
+            const savedData = localStorage.getItem('savedSignature');
+            if (savedData) {
+                const img = new Image();
+                img.onload = function() {
+                    // Penting: Menggambar ulang ke kanvas yang ukurannya sudah benar
+                    ctx.drawImage(img, 0, 0, canvas.width, canvas.height); 
+                    outputImage.src = savedData;
+                };
+                img.src = savedData;
+            }
+        });
+  
+  
+  /*===================================
+  NOMOR NOTA
+  ==================================*/
+    function cetak() {      
+var n = localStorage.getItem('counter3');
+
+  
+if (n === null) {
+    n = 0;
+}
+ 
+n++;
+ 
+localStorage.setItem("counter3", n);
+ 
+document.getElementById('counter3').innerHTML = n;
+  
+   }
+ 
+function reset_counter3() {
+    localStorage.removeItem('counter3');
+}
+  
+//tanggal
+document.getElementById("para1").innerHTML = formatAMPM();
+
+function formatAMPM() {
+var d = new Date(),
+    hours = d.getHours().toString().length == 1 ? '0'+d.getHours() : d.getHours(),
+    months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+return months[d.getMonth()]+' '+d.getDate()+' '+d.getFullYear();
+  
+} 
+  
+  
+      function klaporan() {
+     let nama = document.getElementById('txtNome').value;
+    let total = document.getElementById('volum').value; 
+      
+window.location.href = "https://catetanduit.blogspot.com/2026/02/pemasukan-harian.html?nama=" + encodeURIComponent(nama) + "&total=" + total;   
+   }
+  
+  /*=================================
+  BUKA TUTUP
+  ======================================*/
+  function tutupKolom(namaKelas) {
+  var aturanCSS = '.' + namaKelas + ' { display: block; }';
+  
+  document.getElementById("memo").innerHTML = aturanCSS;
+}
+
+function resetTampilan() {
+  document.getElementById("memo").innerHTML = '';
+}
+  
+ function editnota() {
+  document.getElementById("memo1").innerHTML = '.awalan{display:none;}';
+}
+  
+  /*================================
+  DRIVE
+  ====================================*/
+  function simpanKeRiwayat() {
+    // 1. Ambil data dari input yang Abang maksud
+    const namaCustomer = document.getElementById('txtNome').value || "Tanpa Nama";
+    const totalHarga = document.getElementById('volum').value;
+
+    if (totalHarga === "0" || totalHarga === "") {
+        alert("Total masih nol, Bang! Isi dulu harganya.");
+        return;
+    }
+
+    // 2. Ambil elemen tabel riwayat
+    const tbody = document.getElementById('isiRiwayat');
+
+    // 3. Buat baris baru di tabel
+    const barisBaru = tbody.insertRow();
+
+    // 4. Isi kolomnya
+    barisBaru.insertCell(0).innerText = namaCustomer;
+    barisBaru.insertCell(1).innerText = "Rp " + totalHarga;
+    
+    // Kasih tombol lihat (simulasi)
+    const cellAksi = barisBaru.insertCell(2);
+    cellAksi.innerHTML = '<button onclick="alert(\'Nanti bagian ini bakal narik data detail dari Drive!\')">Lihat Detail</button>';
+
+    alert("Nota " + namaCustomer + " tersimpan di riwayat!");
+}
+</script>
+<script>
+  let tokenClient;
+  let accessToken = null;
+
+  // Ganti pakai Client ID punya Abang
+  const CLIENT_ID = '167260298636-pmgiitt3usb68df61re3e9p9s50h53o7.apps.googleusercontent.com';
+  const SCOPES = 'https://www.googleapis.com/auth/drive.file';
+
+  function initClient() {
+    tokenClient = google.accounts.oauth2.initTokenClient({
+      client_id: CLIENT_ID,
+      scope: SCOPES,
+      callback: (tokenResponse) => {
+        accessToken = tokenResponse.access_token;
+        alert("Siaap! Kita sudah dapet izin akses Drive.");
+      },
+    });
+  }
+
+  function simpanKeDrive() {
+    if (!accessToken) {
+        tokenClient.requestAccessToken();
+        return;
+    }
+
+    const namaCustomer = document.getElementById('txtNome').value || "Tanpa Nama";
+    const totalHarga = document.getElementById('volum').value || "0";
+    
+    // Format teks biar rapi dibaca di HP user
+    let isiNotaTeks = "=== NOTA TRANSAKSI ===\n";
+    isiNotaTeks += "Nama Pelanggan : " + namaCustomer + "\n";
+    isiNotaTeks += "Total Tagihan  : " + totalHarga + "\n";
+    isiNotaTeks += "Tanggal        : " + new Date().toLocaleString() + "\n";
+    isiNotaTeks += "======================\n";
+    isiNotaTeks += "Terima kasih sudah bertransaksi.";
+
+    const file = new Blob([isiNotaTeks], {type: 'text/plain'});
+    
+    const metadata = {
+        'name': 'Nota_' + namaCustomer + '.txt', // Sekarang formatnya .txt
+        'mimeType': 'text/plain'
+    };
+
+    const formData = new FormData();
+    formData.append('metadata', new Blob([JSON.stringify(metadata)], {type: 'application/json'}));
+    formData.append('file', file);
+
+    fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
+        method: 'POST',
+        headers: new Headers({'Authorization': 'Bearer ' + accessToken}),
+        body: formData
+    }).then(res => res.json()).then(val => {
+        alert("Nota " + namaCustomer + " sudah tersimpan di Google Drive Anda!");
+    }).catch(err => {
+        alert("Waduh, ada masalah koneksi ke Drive.");
+    });
+}
+  
+  function gapiLoaded() {
+  // Hanya untuk memastikan library Google API siap
+  gapi.load('client', () => {
+    console.log('GAPI client loaded');
+  });
+}
+</script>
+<script src="https://accounts.google.com/gsi/client" onload="initClient()" async defer></script>
+
+<script src="https://apis.google.com/js/api.js" onload="gapiLoaded()" async defer></script>    
+ </body>
+  </html>

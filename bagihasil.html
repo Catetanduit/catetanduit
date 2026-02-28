@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<link href='https://short-url.org/1pNvK.png' rel='icon' type='image/png'/>
+<link href='https://short-url.org/1pNvK.png' rel='icon' sizes='192x192'/>
+<link href='https://short-url.org/1pNvK.png' rel='apple-touch-icon' sizes='180x180'/>
+<link href='manifest.json' rel='manifest'/> 
+<meta content='https://short-url.org/1pNvK' name='msapplication-TileImage'/>
+<meta content='#00a2e9' name='theme-color'/> 
+<meta content='#00a2e9' name='theme-color'/>
+<meta content='#00a2e9' name='msapplication-navbutton-color'/>
+<meta content='yes' name='mobile-web-app-capable'/>
+<meta content='#00a2e9' name='apple-mobile-web-app-status-bar-style'/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"/>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/finansial148/editorgue@main/style-pusat.css">
+    <title></title>
+  <h2 class="judul">Bagi hasil</h2>
+  <style>
+
+  </style>
+  </head>
+  <body>
+    <div class="container">
+    <h2 class="judul" style="color: #1565c0;"><i class="fa fa-calculator"></i> Manajemen Modal & Laba</h2>
+
+    <div class="card-data" style="display: block; border-left: 5px solid #1565c0;">
+        <p style="margin: 0 0 10px 0; font-weight: bold;">Dana Modal Awal</p>
+        <div style="display: flex; gap: 10px;">
+            <input type="number" id="inputModalAwal" placeholder="Rp 0" style="flex: 1; padding: 10px; border-radius: 8px; border: 1px solid #ddd;">
+            <button onclick="setModalAwal()" class="btn btn-biru">Simpan</button>
+        </div>
+        
+        <div style="margin-top: 15px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+            <div style="background: #e3f2fd; padding: 10px; border-radius: 8px;">
+                <span style="font-size: 0.7rem;">SISA MODAL</span><br>
+                <span id="sisaModal" style="font-weight: bold; color: #d32f2f;">Rp 0</span>
+            </div>
+            <div style="background: #e8f5e9; padding: 10px; border-radius: 8px;">
+                <span style="font-size: 0.7rem;">MODAL KEMBALI</span><br>
+                <span id="modalKembali" style="font-weight: bold; color: #2e7d32;">Rp 0</span>
+            </div>
+        </div>
+    </div>
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px;">
+    <div class="card-data" style="flex-direction: column; align-items: flex-start; border-left-color: #2e7d32;">
+        <span style="font-size: 0.7rem; color: #7f8c8d;">TOTAL PEMASUKAN</span>
+        <span class="text-harga" id="ringkasanMasuk" style="color: #2e7d32;">Rp 0</span>
+    </div>
+    <div class="card-data" style="flex-direction: column; align-items: flex-start; border-left-color: #d32f2f;">
+        <span style="font-size: 0.7rem; color: #7f8c8d;">TOTAL PENGELUARAN</span>
+        <span class="text-harga" id="ringkasanKeluar" style="color: #d32f2f;">Rp 0</span>
+    </div>
+</div>
+
+<div class="card-data" id="boxLabaBersih" style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; border-left: none; border-top: 5px solid #1565c0;">
+    <span style="font-size: 0.8rem; font-weight: bold; color: #7f8c8d;">LABA BERSIH SAAT INI</span>
+    <h1 id="ringkasanLaba" style="margin: 10px 0; font-size: 2rem;">Rp 0</h1>
+</div>
+    <div class="card-data" style="display: block; border-left: 5px solid #f39c12; margin-top: 20px;">
+        <p style="margin: 0 0 10px 0; font-weight: bold;">Kalkulator Bagi Hasil (%)</p>
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 5px; margin-bottom: 15px;">
+            <div>
+                <label style="font-size: 0.7rem;">Pemodal</label>
+                <input type="number" id="pctPemodal" value="40" style="width: 80%; padding: 5px; border-radius: 5px; border: 1px solid #ddd;">
+            </div>
+            <div>
+                <label style="font-size: 0.7rem;">Pengelola</label>
+                <input type="number" id="pctPengelola" value="50" style="width: 80%; padding: 5px; border-radius: 5px; border: 1px solid #ddd;">
+            </div>
+            <div>
+                <label style="font-size: 0.7rem;">Usaha</label>
+                <input type="number" id="pctUsaha" value="10" style="width: 80%; padding: 5px; border-radius: 5px; border: 1px solid #ddd;">
+            </div>
+        </div>
+ <p id="infoPersen" style="font-size: 0.8rem; font-weight: bold; text-align: center; margin-top: 10px;">
+    Total Persen: 100% (Sesuai)
+</p>
+        <button onclick="hitungBagiHasil()" class="btn" style="background: #f39c12; color: white; width: 100%; justify-content: center;">Hitung Laba & Bagi Hasil</button>
+      <button onclick="shareWA()" class="btn" style="background-color: #25D366; color: white; width: 100%; margin-top: 10px; justify-content: center;">
+    <i class="fa fa-whatsapp"></i> Kirim Laporan ke WA
+</button>
+    </div>
+
+    <div id="hasilBagi" style="margin-top: 20px; display: none;">
+        <ul style="list-style: none; padding: 0;">
+            <li class="card-data"><span>Laba Bersih:</span> <span id="resLaba" class="text-harga">Rp 0</span></li>
+            <li class="card-data"><span>Bagian Pemodal:</span> <span id="resPemodal">Rp 0</span></li>
+            <li class="card-data"><span>Bagian Pengelola:</span> <span id="resPengelola">Rp 0</span></li>
+            <li class="card-data"><span>Bagian Usaha:</span> <span id="resUsaha">Rp 0</span></li>
+        </ul>
+    </div>
+     
+</div>
+    
+    <button onclick="simpanLaporanLaba()" class="btn btn-pemasukan" style="width: 100%; margin-top: 15px; background-color: #2e7d32;">
+    <i class="fa fa-save"></i> Simpan Laporan ke Arsip
+</button>
+
+<div id="statusSimpan" style="text-align: center; font-size: 0.8rem; margin-top: 10px; color: #2e7d32; display: none;">
+    Laporan berhasil disimpan!
+</div>
+    <div class="bottom-nav">
+    <a href="index.html" class="nav-item">
+        <i class="fa fa-home"></i>
+        <span>Home</span>
+    </a>
+    <a href="pemasukan.html" class="nav-item">
+        <i class="fas fa-hand-holding-usd"></i>
+        <span>Masukan</span>
+    </a>
+    <a href="pengeluaran.html" class="nav-item">
+        <i class="fas fa-shopping-cart"></i>
+        <span>Keluaran</span>
+    </a>
+    <a href="bagi-hasil.html" class="nav-item active">
+        <i class="fa fa-calculator"></i>
+        <span>Laba</span>
+    </a>
+    <a href="arsip.html" class="nav-item">
+        <i class="fa fa-archive"></i>
+        <span>Arsip</span>
+    </a>
+</div>
+<script>
+  // Pasang event listener biar ngecek otomatis tiap angka berubah
+document.querySelectorAll('#pctPemodal, #pctPengelola, #pctUsaha').forEach(input => {
+    input.addEventListener('input', () => {
+        let p1 = parseFloat(document.getElementById('pctPemodal').value) || 0;
+        let p2 = parseFloat(document.getElementById('pctPengelola').value) || 0;
+        let p3 = parseFloat(document.getElementById('pctUsaha').value) || 0;
+        let total = p1 + p2 + p3;
+        
+        let info = document.getElementById('infoPersen');
+        info.innerText = "Total Persen: " + total + "%";
+        
+        if(total === 100) {
+            info.style.color = "green";
+            info.innerText += " (Mantap!)";
+        } else {
+            info.style.color = "red";
+            info.innerText += " (Belum Pas 100%)";
+        }
+    });
+});
+  
+  function hitungBagiHasil() {
+    // 1. Ambil nilai persentase dari input
+    let pctPemodal = parseFloat(document.getElementById('pctPemodal').value) || 0;
+    let pctPengelola = parseFloat(document.getElementById('pctPengelola').value) || 0;
+    let pctUsaha = parseFloat(document.getElementById('pctUsaha').value) || 0;
+
+    // 2. Cek Totalnya
+    let totalPersen = pctPemodal + pctPengelola + pctUsaha;
+
+    // 3. Validasi: Harus pas 100%
+    if (totalPersen !== 100) {
+        alert("Waduh Bang, total persentasenya " + totalPersen + "%. Harus pas 100% ya biar adil!");
+        return; // Berhenti di sini, jangan lanjut hitung
+    }
+
+    // --- Jika lolos validasi (Pas 100%), lanjut simpan & hitung ---
+    
+    // Simpan settingan ke localStorage
+    let settingPersen = {
+        pemodal: pctPemodal,
+        pengelola: pctPengelola,
+        usaha: pctUsaha
+    };
+    localStorage.setItem('setting_persen_umkm', JSON.stringify(settingPersen));
+
+    // Ambil data uang (Pemasukan & Pengeluaran)
+    let dbMasuk = JSON.parse(localStorage.getItem('database_pemasukan')) || [];
+    let totalMasuk = dbMasuk.reduce((sum, item) => sum + item.jumlah, 0);
+
+    let dbKeluar = JSON.parse(localStorage.getItem('db_keluar')) || [];
+    let totalKeluar = dbKeluar.reduce((sum, item) => sum + item.jumlah, 0);
+
+    let labaBersih = totalMasuk - totalKeluar;
+
+    // Tampilkan Hasil (Persentase desimal)
+    document.getElementById('hasilBagi').style.display = "block";
+    document.getElementById('resLaba').innerText = "Rp " + labaBersih.toLocaleString();
+    document.getElementById('resPemodal').innerText = "Rp " + (labaBersih * (pctPemodal / 100)).toLocaleString();
+    document.getElementById('resPengelola').innerText = "Rp " + (labaBersih * (pctPengelola / 100)).toLocaleString();
+    document.getElementById('resUsaha').innerText = "Rp " + (labaBersih * (pctUsaha / 100)).toLocaleString();
+}
+  
+  function loadSettingPersen() {
+    let simpanan = JSON.parse(localStorage.getItem('setting_persen_umkm'));
+
+    if (simpanan) {
+        // Jika sudah pernah simpan, pasang angkanya
+        document.getElementById('pctPemodal').value = simpanan.pemodal;
+        document.getElementById('pctPengelola').value = simpanan.pengelola;
+        document.getElementById('pctUsaha').value = simpanan.usaha;
+    }
+}
+
+function setModalAwal() {
+    let m = document.getElementById('inputModalAwal').value;
+    localStorage.setItem('modal_awal', m);
+    updateTampilanModal();
+}
+
+function updateTampilanModal() {
+    let modalAwal = parseInt(localStorage.getItem('modal_awal')) || 0;
+    
+    // Hitung berapa yang sudah balik (dari kategori "modal" di pengeluaran)
+    let dbKeluar = JSON.parse(localStorage.getItem('db_keluar')) || [];
+    let sudahBalik = dbKeluar
+        .filter(item => item.tipe === 'modal')
+        .reduce((sum, item) => sum + item.jumlah, 0);
+
+    document.getElementById('inputModalAwal').value = modalAwal;
+    document.getElementById('modalKembali').innerText = "Rp " + sudahBalik.toLocaleString();
+    document.getElementById('sisaModal').innerText = "Rp " + (modalAwal - sudahBalik).toLocaleString();
+}
+
+// Jalankan saat halaman dibuka
+updateTampilanModal();
+  
+  function updateDashboardAtas() {
+    // 1. Ambil Data Pemasukan
+    let dbMasuk = JSON.parse(localStorage.getItem('database_pemasukan')) || [];
+    let totalMasuk = dbMasuk.reduce((sum, item) => sum + item.jumlah, 0);
+
+    // 2. Ambil Data Pengeluaran
+    let dbKeluar = JSON.parse(localStorage.getItem('db_keluar')) || [];
+    let totalKeluar = dbKeluar.reduce((sum, item) => sum + item.jumlah, 0);
+
+    // 3. Hitung Laba
+    let labaBersih = totalMasuk - totalKeluar;
+
+    // 4. Tampilkan ke UI
+    document.getElementById('ringkasanMasuk').innerText = "Rp " + totalMasuk.toLocaleString();
+    document.getElementById('ringkasanKeluar').innerText = "Rp " + totalKeluar.toLocaleString();
+    
+    let elLaba = document.getElementById('ringkasanLaba');
+    let boxLaba = document.getElementById('boxLabaBersih');
+    
+    elLaba.innerText = "Rp " + labaBersih.toLocaleString();
+
+    // 5. Logika Warna Sesuai Request Abang
+    if (labaBersih < 0) {
+        // Jika Minus (Warna Merah)
+        elLaba.style.color = "#d32f2f"; 
+        boxLaba.style.borderTopColor = "#d32f2f";
+        elLaba.innerHTML = "- Rp " + Math.abs(labaBersih).toLocaleString(); // Pakai Math.abs biar tanda minusnya rapi
+    } else {
+        // Jika Plus (Warna Biru)
+        elLaba.style.color = "#1565c0";
+        boxLaba.style.borderTopColor = "#1565c0";
+    }
+}
+  
+  function shareWA() {
+    let laba = document.getElementById('resLaba').innerText;
+    let pemodal = document.getElementById('resPemodal').innerText;
+    let pengelola = document.getElementById('resPengelola').innerText;
+    let usaha = document.getElementById('resUsaha').innerText;
+    let tgl = new Date().toLocaleDateString('id-ID', { day:'numeric', month:'long', year:'numeric' });
+
+    let pesan = `*LAPORAN LABA UMKM* %0A` +
+                `Tanggal: ${tgl} %0A` +
+                `---------------------------- %0A` +
+                `*Laba Bersih:* ${laba} %0A%0A` +
+                `*Pembagian:* %0A` +
+                `- Pemodal: ${pemodal} %0A` +
+                `- Pengelola: ${pengelola} %0A` +
+                `- Dana Usaha: ${usaha} %0A` +
+                `---------------------------- %0A` +
+                `_Dikirim otomatis via Aplikasi UMKM_`;
+
+    window.open(`https://wa.me/?text=${pesan}`, '_blank');
+}
+
+// Jangan lupa panggil fungsi ini di window.onload atau paling bawah script
+updateDashboardAtas();
+  
+  /*-------------------
+  SIMPAN LAPORAN
+  ---------------------*/
+  function simpanLaporanLaba() {
+    let tgl = new Date();
+    let namaBulan = tgl.toLocaleString('id-ID', { month: 'long', year: 'numeric' });
+    
+    // Ambil angka dari tampilan (hapus tulisan "Rp" dan titik-titik ribuan)
+    let laba = document.getElementById('resLaba').innerText.replace(/[^0-9]/g, '');
+    let bagiPemodal = document.getElementById('resPemodal').innerText.replace(/[^0-9]/g, '');
+    let bagiPengelola = document.getElementById('resPengelola').innerText.replace(/[^0-9]/g, '');
+    let bagiUsaha = document.getElementById('resUsaha').innerText.replace(/[^0-9]/g, '');
+
+    let laporanBaru = {
+        id: Date.now(),
+        bulan: namaBulan,
+        totalLaba: parseInt(laba),
+        bagianPemodal: parseInt(bagiPemodal),
+        bagianPengelola: parseInt(bagiPengelola),
+        bagianUsaha: parseInt(bagiUsaha)
+    };
+
+    // Simpan ke database laporan (db_laporan_laba)
+    let dbLaporan = JSON.parse(localStorage.getItem('db_laporan_laba')) || [];
+    dbLaporan.push(laporanBaru);
+    localStorage.setItem('db_laporan_laba', JSON.stringify(dbLaporan));
+
+    // Notifikasi sukses
+    document.getElementById('statusSimpan').style.display = "block";
+    setTimeout(() => {
+        document.getElementById('statusSimpan').style.display = "none";
+    }, 3000);
+}
+   
+// Panggil fungsi load ini di paling bawah script atau di window.onload
+loadSettingPersen();
+updateTampilanModal(); // Fungsi modal yang kemarin juga tetap dipanggil  
+</script>
+</body>
+</html>

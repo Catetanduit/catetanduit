@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<link href='https://short-url.org/1pNvK.png' rel='icon' type='image/png'/>
+<link href='https://short-url.org/1pNvK.png' rel='icon' sizes='192x192'/>
+<link href='https://short-url.org/1pNvK.png' rel='apple-touch-icon' sizes='180x180'/>
+<link href='manifest.json' rel='manifest'/> 
+<meta content='https://short-url.org/1pNvK' name='msapplication-TileImage'/>
+<meta content='#00a2e9' name='theme-color'/> 
+<meta content='#00a2e9' name='theme-color'/>
+<meta content='#00a2e9' name='msapplication-navbutton-color'/>
+<meta content='yes' name='mobile-web-app-capable'/>
+<meta content='#00a2e9' name='apple-mobile-web-app-status-bar-style'/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"/>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/finansial148/editorgue@main/style-pusat.css">
+    <title>Arsip Data</title>
+  <style>
+  </style>
+  </head>
+  <body>
+    <div class="container">
+    <h2><i class="fa fa-archive"></i> Arsip Data (Cloud)</h2>
+    <p style="font-size: 0.8rem; color: #666;">Data yang sudah di-backup ke Drive bisa dilihat kembali di sini.</p>
+
+    <div style="background: #f1f1f1; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+        <label>Pilih Data Bulan:</label>
+        <input type="month" id="pilihArsip" onchange="muatArsip()">
+    </div>
+
+    <div id="statusArsip" style="text-align: center; color: #999; margin-bottom: 10px;">
+        Pilih bulan untuk melihat riwayat...
+    </div>
+
+    <div id="isiArsip" style="margin-top: 10px;">
+        </div>
+    
+    <div id="totalArsip" style="margin-top: 20px; font-weight: bold; font-size: 1.2rem; display: none;">
+        Total Pemasukan: <span id="angkaTotalArsip">Rp 0</span>
+    </div>
+</div>
+    <div class="container">
+    <h2 class="judul" style="color: #2c3e50;"><i class="fa fa-archive"></i> Arsip Laba Bulanan</h2>
+
+    <div id="daftarArsip">
+        </div>
+
+    <button onclick="hapusSemuaArsip()" class="btn btn-outline-hapus" style="width: 100%; margin-top: 30px; border-style: dashed;">
+        <i class="fa fa-trash"></i> Bersihkan Semua Arsip
+    </button>
+</div>
+    <div class="bottom-nav">
+    <a href="index.html" class="nav-item">
+        <i class="fa fa-home"></i>
+        <span>Home</span>
+    </a>
+    <a href="pemasukan.html" class="nav-item">
+        <i class="fas fa-hand-holding-usd"></i>
+        <span>Masukan</span>
+    </a>
+    <a href="pengeluaran.html" class="nav-item">
+        <i class="fas fa-shopping-cart"></i>
+        <span>Keluaran</span>
+    </a>
+    <a href="bagi-hasil.html" class="nav-item active">
+        <i class="fa fa-calculator"></i>
+        <span>Laba</span>
+    </a>
+    <a href="arsip.html" class="nav-item">
+        <i class="fa fa-archive"></i>
+        <span>Arsip</span>
+    </a>
+</div>
+    <script>
+      function muatArsip() {
+    let bulan = document.getElementById('pilihArsip').value;
+    let container = document.getElementById('isiArsip');
+    let status = document.getElementById('statusArsip');
+    
+    // Nanti di sini kita panggil script Google Drive API
+    // Untuk sekarang, kita beri simulasi "Loading"
+    status.innerText = "Mencari data di Cloud untuk bulan " + bulan + "...";
+    container.innerHTML = "";
+
+    // Contoh simulasi jika data ditemukan (Nanti ini diganti hasil dari Drive)
+    /*
+    tampilkanDataArsip(dataDariDrive); 
+    */
+}
+
+function tampilkanDataArsip(data) {
+    let html = "";
+    let total = 0;
+
+    data.forEach(item => {
+        html += `
+        <div style="display: flex; justify-content: space-between; padding: 10px 5px; border-bottom: 1px solid #ddd;">
+            <div style="display: flex; flex-direction: column;">
+                <span style="font-size: 0.8rem; color: gray;">${item.tanggal}</span>
+                <span style="font-weight: bold;">${item.keterangan}</span>
+            </div>
+            <span style="font-weight: bold;">Rp ${item.jumlah.toLocaleString()}</span>
+        </div>`;
+        total += item.jumlah;
+    });
+
+    document.getElementById('isiArsip').innerHTML = html;
+    document.getElementById('statusArsip').innerText = "Data berhasil dimuat.";
+    document.getElementById('totalArsip').style.display = "block";
+    document.getElementById('angkaTotalArsip').innerText = "Rp " + total.toLocaleString();
+}
+      
+      /*----------------------------
+      INTIP ARSIP
+      ---------------------------*/
+      function tampilkanArsip() {
+    const wadah = document.getElementById('daftarArsip');
+    const dataArsip = JSON.parse(localStorage.getItem('db_laporan_laba')) || [];
+
+    if (dataArsip.length === 0) {
+        wadah.innerHTML = `
+            <div style="text-align: center; padding: 50px 20px; color: #95a5a6;">
+                <i class="fa fa-folder-open" style="font-size: 3rem; margin-bottom: 10px;"></i>
+                <p>Belum ada laporan yang disimpan, Bang!</p>
+            </div>`;
+        return;
+    }
+
+    // Urutkan dari yang terbaru (paling atas)
+    dataArsip.reverse();
+
+    let html = "";
+    dataArsip.forEach(item => {
+        html += `
+        <div class="card-data" style="display: block; border-left: 5px solid #f39c12; margin-bottom: 15px; position: relative;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px;">
+                <div>
+                    <span style="font-weight: bold; font-size: 1.1rem; color: #2c3e50;">${item.bulan}</span>
+                </div>
+                <span onclick="hapusSatuArsip(${item.id})" style="color: #e74c3c; cursor: pointer;"><i class="fa fa-times-circle"></i></span>
+            </div>
+            
+            <div style="background: #fdf2e9; padding: 10px; border-radius: 8px; margin-bottom: 10px;">
+                <small style="color: #d35400;">TOTAL LABA BERSIH</small><br>
+                <strong style="font-size: 1.2rem; color: #27ae60;">Rp ${item.totalLaba.toLocaleString()}</strong>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 5px; font-size: 0.75rem; color: #7f8c8d;">
+                <div>Pemodal:<br><strong style="color: #333;">Rp ${item.bagianPemodal.toLocaleString()}</strong></div>
+                <div>Pengelola:<br><strong style="color: #333;">Rp ${item.bagianPengelola.toLocaleString()}</strong></div>
+                <div>Usaha:<br><strong style="color: #333;">Rp ${item.bagianUsaha.toLocaleString()}</strong></div>
+            </div>
+        </div>
+        `;
+    });
+
+    wadah.innerHTML = html;
+}
+
+function hapusSatuArsip(id) {
+    if (confirm("Yakin mau hapus laporan bulan ini, Bang?")) {
+        let dataArsip = JSON.parse(localStorage.getItem('db_laporan_laba')) || [];
+        dataArsip = dataArsip.filter(item => item.id !== id);
+        localStorage.setItem('db_laporan_laba', JSON.stringify(dataArsip));
+        tampilkanArsip();
+    }
+}
+
+function hapusSemuaArsip() {
+    if (confirm("Gawat! Ini bakal hapus SEMUA riwayat laba. Yakin Bang?")) {
+        localStorage.removeItem('db_laporan_laba');
+        tampilkanArsip();
+    }
+}
+
+// Jalankan saat halaman dibuka
+tampilkanArsip();
+      
+    </script>
+  </body>
+</html>

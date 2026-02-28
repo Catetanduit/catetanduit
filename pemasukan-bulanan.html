@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<link href='https://short-url.org/1pNvK.png' rel='icon' type='image/png'/>
+<link href='https://short-url.org/1pNvK.png' rel='icon' sizes='192x192'/>
+<link href='https://short-url.org/1pNvK.png' rel='apple-touch-icon' sizes='180x180'/>
+<link href='manifest.json' rel='manifest'/> 
+<meta content='https://short-url.org/1pNvK' name='msapplication-TileImage'/>
+<meta content='#00a2e9' name='theme-color'/> 
+<meta content='#00a2e9' name='theme-color'/>
+<meta content='#00a2e9' name='msapplication-navbutton-color'/>
+<meta content='yes' name='mobile-web-app-capable'/>
+<meta content='#00a2e9' name='apple-mobile-web-app-status-bar-style'/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"/>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/finansial148/editorgue@main/style-pusat.css">
+    <title>Pemasukan Bulanan</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/finansial148/editorgue@main/style-pusat.css">
+    <style>
+        body { font-family: sans-serif; padding: 10px; color: #333; }
+        #chartContainer { width: 100%; max-width: 500px; margin: auto; }
+        .del-btn { color: red; cursor: pointer; float: right; }
+        li { margin-bottom: 5px; background: #f9f9f9; }
+    </style>
+</head>
+<body>
+  <button class="btn btn-pemasukan">Tes Tombol Bahenol</button>
+<div style="text-align: right; margin-top: 10px; margin-bottom: 20px;">
+    <button onclick="hapusSemuaBulanan()" style="background: none; border: 1px solid red; color: red; padding: 5px 10px; border-radius: 5px; cursor: pointer; font-size: 12px;">
+        <i class="fa fa-trash"></i> Hapus Semua Data
+    </button>
+</div>
+    <div id="chartContainer">
+        <canvas id="myChart"></canvas>
+    </div>
+
+    <h3>Data Pemasukan</h3>
+    <ul id="namast" style="list-style:none;padding:0;width:95%;">
+        </ul>
+<div class="bottom-nav">
+    <a href="index.html" class="nav-item">
+        <i class="fa fa-home"></i>
+        <span>Home</span>
+    </a>
+    <a href="pemasukan.html" class="nav-item">
+        <i class="fas fa-hand-holding-usd"></i>
+        <span>Masukan</span>
+    </a>
+    <a href="pengeluaran.html" class="nav-item">
+        <i class="fas fa-shopping-cart"></i>
+        <span>Keluaran</span>
+    </a>
+    <a href="bagi-hasil.html" class="nav-item active">
+        <i class="fa fa-calculator"></i>
+        <span>Laba</span>
+    </a>
+    <a href="arsip.html" class="nav-item">
+        <i class="fa fa-archive"></i>
+        <span>Arsip</span>
+    </a>
+</div>
+    <script>
+        let dbBulanan = JSON.parse(localStorage.getItem('db_bulanan_umkm')) || [];
+
+        window.onload = function() {
+            const params = new URLSearchParams(window.location.search);
+            const bulan = params.get('bulan');
+            const total = params.get('total');
+
+            if (bulan && total) {
+                // Simpan data baru
+                dbBulanan.push({
+                    key: Date.now(),
+                    bulan: bulan,
+                    total: parseInt(total)
+                });
+                localStorage.setItem('db_bulanan_umkm', JSON.stringify(dbBulanan));
+                // Bersihkan URL
+                window.history.replaceState({}, document.title, window.location.pathname);
+            }
+            tampilkanSemua();
+        };
+
+        function tampilkanSemua() {
+    let html = "";
+    let labelsSingkat = []; // Untuk Grafik
+    let values = [];
+
+    dbBulanan.forEach((item) => {
+        // 1. Buat List (UL) dengan nama bulan lengkap
+        html += `<li style="border:1px solid #00000038; padding: 10px; width:100%; display:block; overflow:hidden;">
+            <span style="font-weight: bold; margin-right:20px;">${item.bulan}</span>
+            <span>Rp.${item.total.toLocaleString()}</span>
+            <span onclick="hapusData(${item.key})" class="del-btn"><i class="fa fa-trash"></i></span>
+        </li>`;
+        
+        // 2. Buat Label Singkat untuk Grafik
+        // item.bulan itu formatnya "26/Februari/2026"
+        let bagian = item.bulan.split('/'); 
+        let namaBulanLengkap = bagian[1]; // Mengambil "Februari"
+        let singkatan = namaBulanLengkap.substring(0, 3); // Mengambil "Feb"
+        
+        labelsSingkat.push(singkatan); 
+        values.push(item.total);
+    });
+
+    document.getElementById('namast').innerHTML = html;
+    bikinGrafik(labelsSingkat, values); // Kirim yang singkat ke grafik
+}
+
+        function bikinGrafik(labels, values) {
+            const ctx = document.getElementById('myChart').getContext('2d');
+            if (window.chartPusat) window.chartPusat.destroy();
+
+            window.chartPusat = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Omzet Bulanan',
+                        data: values,
+                        backgroundColor: '#4CAF50',
+                        borderRadius: 5
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+        }
+
+        function hapusData(key) {
+            if (confirm("Hapus data rekap ini?")) {
+                dbBulanan = dbBulanan.filter(item => item.key !== key);
+                localStorage.setItem('db_bulanan_umkm', JSON.stringify(dbBulanan));
+                tampilkanSemua();
+            }
+        }
+      
+      function hapusSemuaBulanan() {
+    // Konfirmasi lapis pertama
+    let tanya1 = confirm("Apakah Abang yakin mau menghapus SEMUA data rekap bulanan?");
+    
+    if (tanya1) {
+        // Konfirmasi lapis kedua (biar benar-benar yakin)
+        let tanya2 = confirm("Data yang sudah dihapus tidak bisa dikembalikan lagi, lho. Beneran mau dihapus semua?");
+        
+        if (tanya2) {
+            // Proses pembersihan
+            dbBulanan = []; // Kosongkan array di memori
+            localStorage.removeItem('db_bulanan_umkm'); // Hapus dari database HP
+            
+            // Update tampilan
+            tampilkanSemua(); 
+            
+            alert("Sip! Semua data sudah dibersihkan. Siap mulai tahun yang baru!");
+        }
+    }
+}
+    </script>
+</body>
+</html>
