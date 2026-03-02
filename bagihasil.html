@@ -306,31 +306,49 @@ function initClient() {
 
 // Fungsi Utama Simpan (Dipanggil saat tombol diklik)
 function simpanLaporanLaba() {
-    // A. Ambil Data dari Tampilan
+    // A. DATA WAKTU
     let tgl = new Date();
     let namaBulan = tgl.toLocaleString('id-ID', { month: 'long', year: 'numeric' });
+    
+    // B. DATA BAGI HASIL (Dari Angka UI)
     let laba = document.getElementById('resLaba').innerText.replace(/[^0-9]/g, '');
     let bagiPemodal = document.getElementById('resPemodal').innerText.replace(/[^0-9]/g, '');
     let bagiPengelola = document.getElementById('resPengelola').innerText.replace(/[^0-9]/g, '');
     let bagiUsaha = document.getElementById('resUsaha').innerText.replace(/[^0-9]/g, '');
 
-    // B. Simpan ke LocalStorage HP dulu (Biar ada cadangan di HP)
-    let laporanBaru = {
+    // C. DATA RINGKASAN & MODAL (Data Tambahan yang Abang minta)
+    let r_masuk = document.getElementById('ringkasanMasuk').innerText.replace(/[^0-9]/g, '');
+    let r_keluar = document.getElementById('ringkasanKeluar').innerText.replace(/[^0-9]/g, '');
+    let m_awal = document.getElementById('inputModalAwal').value || 0;
+    let m_kembali = document.getElementById('modalKembali').innerText.replace(/[^0-9]/g, '');
+    let m_sisa = document.getElementById('sisaModal').innerText.replace(/[^0-9]/g, '');
+
+    // D. BUNGKUS JADI SATU PAKET LENGKAP
+    let laporanLengkap = {
         id: Date.now(),
         bulan: namaBulan,
+        tanggalSimpan: tgl.toLocaleString('id-ID'),
+        // Bagian Laba
         totalLaba: parseInt(laba),
         bagianPemodal: parseInt(bagiPemodal),
         bagianPengelola: parseInt(bagiPengelola),
-        bagianUsaha: parseInt(bagiUsaha)
+        bagianUsaha: parseInt(bagiUsaha),
+        // Bagian Ringkasan
+        totalPemasukan: parseInt(r_masuk),
+        totalPengeluaran: parseInt(r_keluar),
+        // Bagian Modal
+        modalAwal: parseInt(m_awal),
+        modalSudahKembali: parseInt(m_kembali),
+        modalSisa: parseInt(m_sisa)
     };
 
+    // E. SIMPAN KE LOCALSTORAGE (HP)
     let dbLaporan = JSON.parse(localStorage.getItem('db_laporan_laba')) || [];
-    dbLaporan.push(laporanBaru);
+    dbLaporan.push(laporanLengkap);
     localStorage.setItem('db_laporan_laba', JSON.stringify(dbLaporan));
 
-    // C. Proses Kirim ke Google Drive User
+    // F. KIRIM KE GOOGLE DRIVE
     if (!accessToken) {
-        // Kalau belum login, minta izin dulu
         tokenClient.requestAccessToken();
     } else {
         eksekusiSimpanKeDrive();
@@ -338,12 +356,12 @@ function simpanLaporanLaba() {
 }
 
 function eksekusiSimpanKeDrive() {
-    // Ambil data terakhir dari localStorage untuk dikirim
     let dbLaporan = JSON.parse(localStorage.getItem('db_laporan_laba')) || [];
     let dataTerakhir = dbLaporan[dbLaporan.length - 1];
 
+    // Nama file sekarang lebih keren: Laporan_Lengkap_Maret_2026.json
     const metadata = {
-        'name': 'Laporan_Laba_' + dataTerakhir.bulan + '.json',
+        'name': 'Laporan_Lengkap_' + dataTerakhir.bulan.replace(' ', '_') + '.json',
         'mimeType': 'application/json'
     };
 
@@ -357,10 +375,10 @@ function eksekusiSimpanKeDrive() {
         headers: new Headers({'Authorization': 'Bearer ' + accessToken}),
         body: formData
     }).then(res => res.json()).then(val => {
-        alert("Laporan bulan " + dataTerakhir.bulan + " BERHASIL tersimpan di Drive Anda!");
+        alert("Sip! Laporan Lengkap Bulan " + dataTerakhir.bulan + " sudah aman di Drive.");
         document.getElementById('statusSimpan').style.display = "block";
     }).catch(err => {
-        alert("Gagal kirim ke Drive. Cek koneksi.");
+        alert("Waduh, gagal kirim data lengkap ke Drive.");
     });
 }
    
@@ -372,6 +390,7 @@ updateTampilanModal(); // Fungsi modal yang kemarin juga tetap dipanggil
 <script src="https://apis.google.com/js/api.js" async defer></script>
 </body>
 </html>
+
 
 
 
