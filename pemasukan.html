@@ -67,165 +67,66 @@
     </a>
 </div>
 <script>
-// Ambil data dari LocalStorage saat halaman dibuka
 let dataPemasukan = JSON.parse(localStorage.getItem('database_pemasukan')) || [];
 
-window.onload = function() {
-    // 1. CEK APAKAH ADA KIRIMAN DARI NOTA LEWAT URL
-    const params = new URLSearchParams(window.location.search);
-    const namaNota = params.get('nama');
-    const totalNota = params.get('total');
+// --- SETTING GOOGLE DRIVE ---
+const CLIENT_ID = '561366474384-9hf22uio84jrj7adafut9r2h15c2ninf.apps.googleusercontent.com';
+const SCOPES = 'https://www.googleapis.com/auth/drive.file';
+let tokenClient;
+let accessToken = null;
 
-    if (namaNota && totalNota) {
-        simpanData(namaNota, totalNota);
-        // Hilangkan parameter di URL biar kalau direfresh nggak masuk dua kali
-        window.history.replaceState({}, document.title, window.location.pathname);
-    }
+function initClient() {
+    tokenClient = google.accounts.oauth2.initTokenClient({
+        client_id: CLIENT_ID, scope: SCOPES,
+        callback: (tokenResponse) => { accessToken = tokenResponse.access_token; uploadKeDrive(); }
+    });
+}
 
-    tampilkanData();
-};
-
-// Fungsi untuk simpan ke array dan LocalStorage
+// Fungsi Simpan (Modifikasi: Tambah Trigger Backup)
 function simpanData(ket, nominal) {
     let tgl = new Date().toLocaleDateString('id-ID'); 
-    
-    // BERSIHKAN TITIK: Kita hapus semua titik agar "30.000" jadi "30000"
     let angkaBersih = nominal.toString().replace(/\./g, "");
     
     dataPemasukan.unshift({
         tanggal: tgl,
         keterangan: ket,
-        jumlah: parseInt(angkaBersih) // Sekarang sudah jadi 30000 murni
+        jumlah: parseInt(angkaBersih)
     });
 
     localStorage.setItem('database_pemasukan', JSON.stringify(dataPemasukan));
     tampilkanData();
-}
-
-// Fungsi Input Manual
-function inputManual() {
-    let ket = document.getElementById('mNama').value;
-    let nom = document.getElementById('mTotal').value;
-    if(ket && nom) {
-        simpanData(ket, nom);
-        document.getElementById('mNama').value = "";
-        document.getElementById('mTotal').value = "";
-    }
-    backupHarianKeDrive();
-}
-
-// Fungsi Menampilkan ke Tabel
-function tampilkanData() {
-    let html = "";
-    let totalSeluruhnya = 0;
-
-    dataPemasukan.forEach((item, index) => { // Kita tambah 'index' di sini
-        html += `
-        <div class="kotak-msk">
-            <div class="hal-msk">
-                <span class="isi1-msk">${item.tanggal}</span>
-                <span class="isi2-msk">${item.keterangan}</span>
-            </div>
-            
-            <div class="nomin-msk">
-                <span>Rp ${item.jumlah.toLocaleString()}</span>
-                
-                <button onclick="hapusBaris(${index})">
-                    X
-                </button>
-            </div>
-        </div>`;
-        totalSeluruhnya += item.jumlah;
-    });
-
-    document.getElementById('bodyTabel').innerHTML = html;
-    document.getElementById('totalSemua').innerText = "Total: Rp " + totalSeluruhnya.toLocaleString();
-}
-  
-function hapusBaris(index) {
-    if (confirm("Hapus catatan ini?")) {
-        // 1. Hapus 1 item pada posisi index tertentu
-        dataPemasukan.splice(index, 1);
-        
-        // 2. Simpan ulang perubahan ke LocalStorage
-        localStorage.setItem('database_pemasukan', JSON.stringify(dataPemasukan));
-        
-        // 3. Tampilkan data terbaru
-        tampilkanData();
-    }
-}  
-
-function hapusSemua() {
-    if(confirm("Yakin mau hapus semua laporan bulan ini?")) {
-        localStorage.removeItem('database_pemasukan');
-        dataPemasukan = [];
-        tampilkanData();
-    }
-}
-  function kirimKeBulanan() {
-    // Ambil nilai dari h3 (kita bersihkan teks 'Total: Rp' dan titik-titiknya)
-    let totalTeks = document.getElementById('totalSemua').innerText;
-    let angkaSaja = totalTeks.replace(/[^0-9]/g, ''); 
     
-    // Ambil bulan & tahun saat ini untuk label
-    let d = new Date();
-    let namaBulan = d.toLocaleDateString('id-ID', { month: 'long', year: 'numeric' });
-    let tglLengkap = d.getDate() + "/" + namaBulan;
-
-    // Kirim ke halaman bulanan via URL
-    window.location.href = "https://catetanduit.github.io/catetanduit/pemasukan-bulanan.html?bulan=" + encodeURIComponent(tglLengkap) + "&total=" + angkaSaja;
+    // OTOMATIS BACKUP KE DRIVE
+    mulaiBackup();
 }
-  
-  function prosesBackup() {
-    let dataHarian = localStorage.getItem('database_pemasukan');
-    
-    if (!dataHarian || dataHarian === "[]") {
-        alert("Nggak ada data yang bisa di-backup, Bang!");
-        return;
+
+function mulaiBackup() {
+    if (!accessToken) {
+        tokenClient.requestAccessToken(); // Minta izin dulu kalau belum login
+    } else {
+        uploadKeDrive();
     }
-
-    // Untuk sementara, sebelum kita pasang API Google Drive yang asli, 
-    // kita simulasikan prosesnya dulu.
-    console.log("Menyiapkan paket data untuk diupload...");
-    
-    // Nanti di sini kita akan panggil fungsi upload ke Drive
-    alert("Data siap di-arsipkan! (Langkah selanjutnya: Menyambungkan ke Google Drive API)");
 }
 
-    //  BACKUP HARIAN--------
-   function backupHarianKeDrive() {
-    let dataMasuk = JSON.parse(localStorage.getItem('database_pemasukan')) || [];
-    let dataKeluar = JSON.parse(localStorage.getItem('db_keluar')) || [];
-    let tgl = new Date().toLocaleDateString('id-ID');
-
-    // Hitung total buat ringkasan di history nanti
-    let totalIn = dataMasuk.reduce((s, i) => s + i.jumlah, 0);
-    let totalOut = dataKeluar.reduce((s, i) => s + i.jumlah, 0);
+async function uploadKeDrive() {
+    let tgl = new Date().toLocaleDateString('id-ID').replace(/\//g, '-');
+    let dataKeluar = JSON.parse(localStorage.getItem('db_keluar')) || []; // Ambil juga data pengeluaran biar sinkron
 
     let paketHarian = {
         id: Date.now(),
-        tanggal: tgl,
-        pemasukan: dataMasuk,
+        tanggal: new Date().toLocaleDateString('id-ID'),
+        pemasukan: dataPemasukan,
         pengeluaran: dataKeluar,
-        totalIn: totalIn,
-        totalOut: totalOut
+        totalIn: dataPemasukan.reduce((s, i) => s + i.jumlah, 0),
+        totalOut: dataKeluar.reduce((s, i) => s + i.jumlah, 0)
     };
 
-    // Panggil fungsi upload (Gunakan logika OAuth simpanKeDrive yang sudah kita buat sebelumnya)
-    // Pastikan accessToken sudah ada
-    if (!accessToken) {
-        tokenClient.requestAccessToken();
-    } else {
-        eksekusiUploadHarian(paketHarian);
-    }
-}
-
-function eksekusiUploadHarian(data) {
     const metadata = {
-        'name': 'Daily_Log_' + data.tanggal.replace(/\//g, '-') + '.json',
+        'name': 'Daily_Log_' + tgl + '.json',
         'mimeType': 'application/json'
     };
-    const file = new Blob([JSON.stringify(data)], {type: 'application/json'});
+
+    const file = new Blob([JSON.stringify(paketHarian)], {type: 'application/json'});
     const formData = new FormData();
     formData.append('metadata', new Blob([JSON.stringify(metadata)], {type: 'application/json'}));
     formData.append('file', file);
@@ -234,12 +135,50 @@ function eksekusiUploadHarian(data) {
         method: 'POST',
         headers: new Headers({'Authorization': 'Bearer ' + accessToken}),
         body: formData
-    }).then(() => alert("History Harian Berhasil di-Backup!"));
-} 
+    }).then(() => {
+        console.log("Backup Pemasukan Berhasil!");
+    });
+}
+
+// Fungsi input manual & tampilkan (Tetap seperti aslinya)
+function inputManual() {
+    let ket = document.getElementById('mNama').value;
+    let nom = document.getElementById('mTotal').value;
+    if(ket && nom) {
+        simpanData(ket, nom);
+        document.getElementById('mNama').value = "";
+        document.getElementById('mTotal').value = "";
+    }
+}
+
+function tampilkanData() {
+    let html = "";
+    let totalSeluruhnya = 0;
+    dataPemasukan.forEach((item, index) => {
+        html += `<div class="kotak-msk"><div class="hal-msk"><span>${item.tanggal}</span><span>${item.keterangan}</span></div><div class="nomin-msk"><span>Rp ${item.jumlah.toLocaleString()}</span><button onclick="hapusBaris(${index})">X</button></div></div>`;
+        totalSeluruhnya += item.jumlah;
+    });
+    document.getElementById('bodyTabel').innerHTML = html;
+    document.getElementById('totalSemua').innerText = "Total: Rp " + totalSeluruhnya.toLocaleString();
+}
+
+function hapusBaris(index) {
+    if (confirm("Hapus catatan ini?")) {
+        dataPemasukan.splice(index, 1);
+        localStorage.setItem('database_pemasukan', JSON.stringify(dataPemasukan));
+        tampilkanData();
+        mulaiBackup(); // Update Drive juga
+    }
+}
+
+window.onload = function() { tampilkanData(); };
 </script>
+      <script src="https://accounts.google.com/gsi/client" onload="initClient()" async defer></script>
+<script src="https://apis.google.com/js/api.js" async defer></script>
     </body>
 
   </html>
+
 
 
 
