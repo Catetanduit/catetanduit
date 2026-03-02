@@ -283,31 +283,38 @@ updateDashboardAtas();
   /*-------------------
   SIMPAN LAPORAN
   ---------------------*/
- // 1. ALAMAT SI SAKTI (Wajib Ada di Atas)
-const URL_GAS = "https://script.google.com/macros/s/AKfycbzlY0TcT_c9j7gcLC8sp0dR2HI_jmKkVmEvt0p5HZl1WA2uuRSSUndDBN8QbzNqCjhO3w/exec";
+// 1. KUNCI AKSES (Pakai Client ID Abang)
+const CLIENT_ID = '167260298636-pmgiitt3usb68df61re3e9p9s50h53o7.apps.googleusercontent.com';
+const SCOPES = 'https://www.googleapis.com/auth/drive.file';
 
-// 2. FUNGSI PENGIRIM (Wajib Ada)
-function kirimKeDrive(dataBaru, jenis) {
-    fetch(URL_GAS, {
-        method: "POST",
-        mode: "no-cors", 
-        body: JSON.stringify({
-            jenisLaporan: jenis, 
-            isi: dataBaru
-        })
-    }).catch(err => console.log("Gagal Cloud: ", err));
+let tokenClient;
+let accessToken = null;
+
+// Inisialisasi Google Login
+function initClient() {
+    tokenClient = google.accounts.oauth2.initTokenClient({
+        client_id: CLIENT_ID,
+        scope: SCOPES,
+        callback: (tokenResponse) => {
+            accessToken = tokenResponse.access_token;
+            alert("Siaap! Google Drive sudah terhubung.");
+            // Setelah dapet token, langsung jalankan fungsi simpan yang tertunda
+            eksekusiSimpanKeDrive(); 
+        },
+    });
 }
 
-// 3. FUNGSI SIMPAN ABANG YANG SUDAH DIMODIFIKASI
+// Fungsi Utama Simpan (Dipanggil saat tombol diklik)
 function simpanLaporanLaba() {
+    // A. Ambil Data dari Tampilan
     let tgl = new Date();
     let namaBulan = tgl.toLocaleString('id-ID', { month: 'long', year: 'numeric' });
-    
     let laba = document.getElementById('resLaba').innerText.replace(/[^0-9]/g, '');
     let bagiPemodal = document.getElementById('resPemodal').innerText.replace(/[^0-9]/g, '');
     let bagiPengelola = document.getElementById('resPengelola').innerText.replace(/[^0-9]/g, '');
     let bagiUsaha = document.getElementById('resUsaha').innerText.replace(/[^0-9]/g, '');
 
+    // B. Simpan ke LocalStorage HP dulu (Biar ada cadangan di HP)
     let laporanBaru = {
         id: Date.now(),
         bulan: namaBulan,
@@ -317,26 +324,53 @@ function simpanLaporanLaba() {
         bagianUsaha: parseInt(bagiUsaha)
     };
 
-    // Simpan ke HP (LocalStorage)
     let dbLaporan = JSON.parse(localStorage.getItem('db_laporan_laba')) || [];
     dbLaporan.push(laporanBaru);
     localStorage.setItem('db_laporan_laba', JSON.stringify(dbLaporan));
 
-    // --- BAGIAN SAKTI: KIRIM KE GOOGLE DRIVE ---
-    kirimKeDrive(laporanBaru, 'laporan_laba_bulanan');
-    // -------------------------------------------
+    // C. Proses Kirim ke Google Drive User
+    if (!accessToken) {
+        // Kalau belum login, minta izin dulu
+        tokenClient.requestAccessToken();
+    } else {
+        eksekusiSimpanKeDrive();
+    }
+}
 
-    // Notifikasi sukses
-    document.getElementById('statusSimpan').style.display = "block";
-    setTimeout(() => {
-        document.getElementById('statusSimpan').style.display = "none";
-    }, 3000);
+function eksekusiSimpanKeDrive() {
+    // Ambil data terakhir dari localStorage untuk dikirim
+    let dbLaporan = JSON.parse(localStorage.getItem('db_laporan_laba')) || [];
+    let dataTerakhir = dbLaporan[dbLaporan.length - 1];
+
+    const metadata = {
+        'name': 'Laporan_Laba_' + dataTerakhir.bulan + '.json',
+        'mimeType': 'application/json'
+    };
+
+    const file = new Blob([JSON.stringify(dataTerakhir, null, 2)], {type: 'application/json'});
+    const formData = new FormData();
+    formData.append('metadata', new Blob([JSON.stringify(metadata)], {type: 'application/json'}));
+    formData.append('file', file);
+
+    fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
+        method: 'POST',
+        headers: new Headers({'Authorization': 'Bearer ' + accessToken}),
+        body: formData
+    }).then(res => res.json()).then(val => {
+        alert("Laporan bulan " + dataTerakhir.bulan + " BERHASIL tersimpan di Drive Anda!");
+        document.getElementById('statusSimpan').style.display = "block";
+    }).catch(err => {
+        alert("Gagal kirim ke Drive. Cek koneksi.");
+    });
 }
    
 // Panggil fungsi load ini di paling bawah script atau di window.onload
 loadSettingPersen();
 updateTampilanModal(); // Fungsi modal yang kemarin juga tetap dipanggil  
 </script>
+<script src="https://accounts.google.com/gsi/client" onload="initClient()" async defer></script>
+<script src="https://apis.google.com/js/api.js" async defer></script>
 </body>
 </html>
+
 
