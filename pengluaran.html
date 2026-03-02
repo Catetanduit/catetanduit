@@ -78,17 +78,30 @@
   <script>
     let dbPengeluaran = JSON.parse(localStorage.getItem('db_keluar')) || [];
 
+// --- SETTING GOOGLE DRIVE ---
+const CLIENT_ID = '561366474384-9hf22uio84jrj7adafut9r2h15c2ninf.apps.googleusercontent.com';
+const SCOPES = 'https://www.googleapis.com/auth/drive.file';
+let tokenClient;
+let accessToken = null;
+
+function initClient() {
+    tokenClient = google.accounts.oauth2.initTokenClient({
+        client_id: CLIENT_ID, scope: SCOPES,
+        callback: (res) => { accessToken = res.access_token; uploadKeDrive(); }
+    });
+}
+
 function tambahPengeluaran() {
     let ket = document.getElementById('ketKeluar').value;
     let nom = parseInt(document.getElementById('nomKeluar').value);
-    let isModal = document.getElementById('isModal').checked; // Cek apakah centang modal
+    let isModal = document.getElementById('isModal').checked;
     let tgl = new Date().toLocaleDateString('id-ID');
 
     if (ket && nom) {
         let dataBaru = {
             key: Date.now(),
             tanggal: tgl,
-            keterangan: isModal ? "REKAP MODAL: " + ket : ket, // Tandai jika modal
+            keterangan: isModal ? "REKAP MODAL: " + ket : ket,
             jumlah: nom,
             tipe: isModal ? "modal" : "biasa"
         };
@@ -96,87 +109,38 @@ function tambahPengeluaran() {
         dbPengeluaran.unshift(dataBaru);
         localStorage.setItem('db_keluar', JSON.stringify(dbPengeluaran));
         
-        // Reset form
         document.getElementById('ketKeluar').value = "";
         document.getElementById('nomKeluar').value = "";
-        document.getElementById('isModal').checked = false;
-
         tampilkanKeluar();
-    } else {
-        alert("Isi dulu keterangannya, Bang!");
+        
+        // OTOMATIS BACKUP
+        mulaiBackup();
     }
 }
 
-function tampilkanKeluar() {
-    let html = "";
-    let total = 0;
-    let modal = 0;
-
-    dbPengeluaran.forEach(item => {
-        total += item.jumlah;
-        if(item.tipe === "modal") modal += item.jumlah;
-
-        html += `
-        <li class="card-data ${item.tipe === 'modal' ? '' : 'card-pengeluaran'}">
-            <div>
-                <span class="text-tgl">${item.tanggal}</span><br>
-                <span class="text-harga" style="${item.tipe === 'modal' ? 'color:#f39c12' : ''}">${item.keterangan}</span>
-            </div>
-            <div style="text-align: right;">
-                <span class="text-harga">Rp ${item.jumlah.toLocaleString()}</span><br>
-                <span onclick="hapusKeluar(${item.key})" style="color:red; cursor:pointer; font-size:0.8rem;"><i class="fa fa-trash"></i></span>
-            </div>
-        </li>`;
-    });
-
-    document.getElementById('listKeluar').innerHTML = html;
-    document.getElementById('totalKeluar').innerText = "Rp " + total.toLocaleString();
-    document.getElementById('totalBalikModal').innerText = "Rp " + modal.toLocaleString();
-}
-
-function hapusKeluar(key) {
-    dbPengeluaran = dbPengeluaran.filter(item => item.key !== key);
-    localStorage.setItem('db_keluar', JSON.stringify(dbPengeluaran));
-    tampilkanKeluar();
-}
-
-// Jalankan saat halaman dibuka
-tampilkanKeluar();
-
- //  BACKUP HARIAN--------
-   function backupHarianKeDrive() {
-    let dataMasuk = JSON.parse(localStorage.getItem('database_pemasukan')) || [];
-    let dataKeluar = JSON.parse(localStorage.getItem('db_keluar')) || [];
-    let tgl = new Date().toLocaleDateString('id-ID');
-
-    // Hitung total buat ringkasan di history nanti
-    let totalIn = dataMasuk.reduce((s, i) => s + i.jumlah, 0);
-    let totalOut = dataKeluar.reduce((s, i) => s + i.jumlah, 0);
-
-    let paketHarian = {
-        id: Date.now(),
-        tanggal: tgl,
-        pemasukan: dataMasuk,
-        pengeluaran: dataKeluar,
-        totalIn: totalIn,
-        totalOut: totalOut
-    };
-
-    // Panggil fungsi upload (Gunakan logika OAuth simpanKeDrive yang sudah kita buat sebelumnya)
-    // Pastikan accessToken sudah ada
+function mulaiBackup() {
     if (!accessToken) {
         tokenClient.requestAccessToken();
     } else {
-        eksekusiUploadHarian(paketHarian);
+        uploadKeDrive();
     }
 }
 
-function eksekusiUploadHarian(data) {
-    const metadata = {
-        'name': 'Daily_Log_' + data.tanggal.replace(/\//g, '-') + '.json',
-        'mimeType': 'application/json'
+async function uploadKeDrive() {
+    let tgl = new Date().toLocaleDateString('id-ID').replace(/\//g, '-');
+    let dataPemasukan = JSON.parse(localStorage.getItem('database_pemasukan')) || [];
+
+    let paketHarian = {
+        id: Date.now(),
+        tanggal: new Date().toLocaleDateString('id-ID'),
+        pemasukan: dataPemasukan,
+        pengeluaran: dbPengeluaran,
+        totalIn: dataPemasukan.reduce((s, i) => s + i.jumlah, 0),
+        totalOut: dbPengeluaran.reduce((s, i) => s + i.jumlah, 0)
     };
-    const file = new Blob([JSON.stringify(data)], {type: 'application/json'});
+
+    const metadata = { 'name': 'Daily_Log_' + tgl + '.json', 'mimeType': 'application/json' };
+    const file = new Blob([JSON.stringify(paketHarian)], {type: 'application/json'});
     const formData = new FormData();
     formData.append('metadata', new Blob([JSON.stringify(metadata)], {type: 'application/json'}));
     formData.append('file', file);
@@ -185,10 +149,33 @@ function eksekusiUploadHarian(data) {
         method: 'POST',
         headers: new Headers({'Authorization': 'Bearer ' + accessToken}),
         body: formData
-    }).then(() => alert("History Harian Berhasil di-Backup!"));
-}   
+    }).then(() => console.log("Backup Pengeluaran Berhasil!"));
+}
+
+function tampilkanKeluar() {
+    let html = "";
+    let total = 0;
+    dbPengeluaran.forEach(item => {
+        total += item.jumlah;
+        html += `<li class="card-data"><div><span class="text-tgl">${item.tanggal}</span><br><span class="text-harga">${item.keterangan}</span></div><div style="text-align: right;"><span class="text-harga">Rp ${item.jumlah.toLocaleString()}</span><br><span onclick="hapusKeluar(${item.key})" style="color:red; cursor:pointer;"><i class="fa fa-trash"></i></span></div></li>`;
+    });
+    document.getElementById('listKeluar').innerHTML = html;
+    document.getElementById('totalKeluar').innerText = "Rp " + total.toLocaleString();
+}
+
+function hapusKeluar(key) {
+    dbPengeluaran = dbPengeluaran.filter(item => item.key !== key);
+    localStorage.setItem('db_keluar', JSON.stringify(dbPengeluaran));
+    tampilkanKeluar();
+    mulaiBackup();
+}
+
+window.onload = function() { tampilkanKeluar(); }; 
   </script>
+      <script src="https://accounts.google.com/gsi/client" onload="initClient()" async defer></script>
+<script src="https://apis.google.com/js/api.js" async defer></script>
   </body>
 
 </html>
+
 
