@@ -18,40 +18,43 @@
     <title></title>
   <h2 class="judul">home</h2>
   <style>
-  .kotak {
-    border: 0px solid #00000059;
+.kotak {
     width: 100%;
     margin: auto;
-    height: 50%;
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
 }
-  .kotak div {
-    border:0px solid;
+.kotak div {
     display: flex;
     flex-direction: row;
-    justify-content: space-around;margin: 10px;
+    justify-content: space-around;
+    margin: 10px;
 }
-  .kotak i {
-    font-size: 50px;
-    color: black;text-shadow: 1px 2px 0px white;margin-bottom: 5px;
+.kotak i {
+    font-size: 40px; /* Ukuran disesuaikan sedikit agar pas 4 baris */
+    text-shadow: 1px 1px 0px white;
+    margin-bottom: 8px;
 }
-  .kotak a {
-    width: 80px;
-    height: 80px;
+.kotak a {
+    width: 90px;
+    height: 90px;
     display: flex;
     flex-direction: column;
-    border: 1px solid;
+    border: 1px solid #ddd;
     align-items: center;
+    justify-content: center;
     padding: 10px;
     border-radius: 15px;
-    box-shadow: 0px 1px 4px 3px black;background: #ffffff4f;text-align: center;
+    box-shadow: 0px 4px 6px rgba(0,0,0,0.2);
+    background: #ffffff;
+    text-align: center;
+    text-decoration: none;
 }
-  .daftarharga{display:none;}
 .kotak w {
-    font-size: 12px;
-    color:#a72b2b;
+    font-size: 11px;
+    color: #a72b2b;
+    font-weight: bold;
+    line-height: 1.2;
 }
     
       #para1{font-size: 10px;position: absolute;padding:0px 10px;color:#ff0000;margin-top: 5px;}
@@ -62,13 +65,53 @@
   <body>
 <div id="para1"></div>
     <div class="container">
-  <div style="height:80%;max-width: 350px;display: flex;margin: auto;">
+<div style="height:100%; max-width: 350px; display: flex; margin: auto; padding-top: 20px;">
   <div class="kotak"> 
-  <div><a href="pemasukan.html"><i class="fas fa-hand-holding-usd" style="color: #27ae60;"></i><w> Pemasukan Harian</w></a><a href="pengluaran.html"><i class="fas fa-shopping-cart" style="color: #e74c3c;"></i><w> Pengeluaran Harian</w></a></div>
-  <div><a href="arsip.html"><i class="fa fa-folder-open" style="color: #3498db;margin-bottom: 15px;"></i><w>Arsip</w></a><a href="pemasukan-bulanan.html"><i class="fas fa-calendar-check" style="color: #f1c40f;"></i><w>Pemasukan Bulanan</w></a></div>
-  <div><a href="notakontan.html"><i class="fas fa-file-invoice-dollar" style="color: #8e44ad;"></i><w> Nota Kontan</w></a><a href="bagihasil.html"><i class="fas fa-chart-pie" style="color: #2c3e50;margin-bottom: 15px;"></i><w> Persentase</w></a></div>
+    <div>
+      <a href="pemasukan.html">
+        <i class="fas fa-hand-holding-usd" style="color: #27ae60;"></i>
+        <w>Pemasukan Harian</w>
+      </a>
+      <a href="pengluaran.html">
+        <i class="fas fa-shopping-cart" style="color: #e74c3c;"></i>
+        <w>Pengeluaran Harian</w>
+      </a>
     </div>
-  </div>    
+
+    <div>
+      <a href="arsip.html">
+        <i class="fa fa-folder-open" style="color: #3498db;"></i>
+        <w>Arsip Laba</w>
+      </a>
+      <a href="pemasukan-bulanan.html">
+        <i class="fas fa-calendar-check" style="color: #f1c40f;"></i>
+        <w>Pemasukan Bulanan</w>
+      </a>
+    </div>
+
+    <div>
+      <a href="notakontan.html">
+        <i class="fas fa-file-invoice-dollar" style="color: #8e44ad;"></i>
+        <w>Nota Kontan</w>
+      </a>
+      <a href="bagihasil.html">
+        <i class="fas fa-chart-pie" style="color: #2c3e50;"></i>
+        <w>Persentase</w>
+      </a>
+    </div>
+
+    <div>
+      <a href="history.html">
+        <i class="fas fa-history" style="color: #f39c12;"></i>
+        <w>History Harian</w>
+      </a>
+      <a href="#" style="opacity: 0.3; pointer-events: none;">
+        <i class="fas fa-cog" style="color: #bdc3c7;"></i>
+        <w>Pengaturan</w>
+      </a>
+    </div>
+  </div>
+</div>   
 </div>
   <script>
 document.getElementById("para1").innerHTML = formatAMPM();
@@ -113,4 +156,5 @@ if (rekapEl) {
 </body>
 
 </html>
+
 
