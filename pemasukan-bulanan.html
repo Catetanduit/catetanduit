@@ -20,48 +20,69 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/finansial148/editorgue@main/style-pusat.css">
     <style>
-        body { font-family: sans-serif; padding: 10px; color: #333; }
-        #chartContainer { width: 100%; max-width: 500px; margin: auto; }
-        .del-btn { color: red; cursor: pointer; float: right; }
-        li { margin-bottom: 5px; background: #f9f9f9; }
+       /* CSS Tambahan biar List-nya Bahenol */
+#namast li {
+    background: white;
+    margin-bottom: 10px;
+    padding: 15px;
+    border-radius: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.04);
+    border-left: 5px solid #f1c40f; /* Warna kuning biar matching sama ikon */
+    transition: transform 0.2s;
+}
+
+#namast li:active {
+    transform: scale(0.98);
+}
+
+.text-bulan {
+    font-weight: bold;
+    color: #2d3748;
+    font-size: 0.95rem;
+}
+
+.text-nominal {
+    color: #27ae60;
+    font-weight: 800;
+    font-size: 1rem;
+}
     </style>
 </head>
 <body>
-  <button class="btn btn-pemasukan">Tes Tombol Bahenol</button>
-<div style="text-align: right; margin-top: 10px; margin-bottom: 20px;">
-    <button onclick="hapusSemuaBulanan()" style="background: none; border: 1px solid red; color: red; padding: 5px 10px; border-radius: 5px; cursor: pointer; font-size: 12px;">
-        <i class="fa fa-trash"></i> Hapus Semua Data
-    </button>
-</div>
-    <div id="chartContainer">
-        <canvas id="myChart"></canvas>
+<div class="container" style="padding: 15px; padding-bottom: 100px; max-width: 500px; margin: auto;">
+    
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <h2 style="color: #2c3e50; margin: 0; font-size: 1.4rem;">
+            <i class="fas fa-chart-line" style="color: #f1c40f;"></i> Statistik
+        </h2>
+        <button onclick="hapusSemuaBulanan()" 
+                style="background: #fff5f5; border: 1px solid #feb2b2; color: #e53e3e; padding: 6px 12px; border-radius: 8px; cursor: pointer; font-size: 11px; font-weight: bold;">
+            <i class="fa fa-trash"></i> Kosongkan
+        </button>
     </div>
 
-    <h3>Data Pemasukan</h3>
-    <ul id="namast" style="list-style:none;padding:0;width:95%;">
+    
+    <div id="chartWrapper" style="background: white; padding: 15px; border-radius: 18px; box-shadow: 0 5px 15px rgba(0,0,0,0.08); margin-bottom: 25px; border: 1px solid #edf2f7;">
+        <div id="chartContainer" style="position: relative; height:250px; width:100%;">
+            <canvas id="myChart"></canvas>
+        </div>
+    </div>
+
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+        <h3 style="margin: 0; font-size: 1.1rem; color: #4a5568;">Riwayat Bulanan</h3>
+        <span style="font-size: 0.8rem; background: #ebf8ff; color: #3182ce; padding: 3px 10px; border-radius: 20px; font-weight: bold;">Update Otomatis</span>
+    </div>
+
+    <ul id="namast" style="list-style:none; padding:0; margin:0;">
         </ul>
-    <div class="bottom-nav">
-    <a href="index.html" class="nav-item">
-        <i class="fa fa-home"></i>
-        <span>Home</span>
-    </a>
-    <a href="pemasukan.html" class="nav-item">
-        <i class="fas fa-hand-holding-usd"></i>
-        <span>Masukan</span>
-    </a>
-    <a href="pengluaran.html" class="nav-item">
-        <i class="fas fa-shopping-cart"></i>
-        <span>Keluaran</span>
-    </a>
-    <a href="bagihasil.html" class="nav-item">
-        <i class="fas fa-chart-pie"></i>
-        <span>Laba</span>
-    </a>
-    <a href="arsip.html" class="nav-item">
-        <i class="fa fa-archive"></i>
-        <span>Arsip</span>
-    </a>
+
 </div>
+
+<div class="bottom-nav">
+    </div>
     <script>
         let dbBulanan = JSON.parse(localStorage.getItem('db_bulanan_umkm')) || [];
 
@@ -161,8 +182,24 @@
         }
     }
 }
+        function tampilkanDataBulanan() {
+    const listUl = document.getElementById('namast');
+    let data = JSON.parse(localStorage.getItem('db_bulanan')) || [];
+    let html = "";
+
+    data.reverse().forEach(item => {
+        html += `
+        <li>
+            <div class="text-bulan">${item.bulan}</div>
+            <div class="text-nominal">Rp ${parseInt(item.total).toLocaleString()}</div>
+        </li>
+        `;
+    });
+    listUl.innerHTML = html;
+}
     </script>
 </body>
 
 </html>
+
 
