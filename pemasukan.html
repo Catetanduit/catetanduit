@@ -177,7 +177,7 @@ function tampilkanData() {
     let html = "";
     let totalSeluruhnya = 0;
     dataPemasukan.forEach((item, index) => {
-        html += `<div class="kotak-msk"><div class="hal-msk"><span>${item.tanggal}</span><span>${item.keterangan}</span></div><div class="nomin-msk"><span>Rp ${item.jumlah.toLocaleString()}</span><button onclick="hapusBaris(${index})">X</button></div></div>`;
+        html += `<div class="kotak-msk"><div class="hal-msk"><span>${item.tanggal}</span><span>${item.keterangan}</span></div><div class="nomin-msk"><span>Rp ${item.jumlah.toLocaleString()}</span><button onclick="hapusBaris(${index})"><i class="fa fa-trash"></i></button></div></div>`;
         totalSeluruhnya += item.jumlah;
     });
     document.getElementById('bodyTabel').innerHTML = html;
@@ -200,6 +200,7 @@ window.onload = function() { tampilkanData(); };
     </body>
 
   </html>
+
 
 
 
