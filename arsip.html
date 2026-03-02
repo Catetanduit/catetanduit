@@ -20,37 +20,12 @@
   </style>
   </head>
   <body>
-    <div class="container">
-    <h2><i class="fa fa-archive"></i> Arsip Data (Cloud)</h2>
-    <p style="font-size: 0.8rem; color: #666;">Data yang sudah di-backup ke Drive bisa dilihat kembali di sini.</p>
-
-    <div style="background: #f1f1f1; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
-        <label>Pilih Data Bulan:</label>
-        <input type="month" id="pilihArsip" onchange="muatArsip()">
-    </div>
-
-    <div id="statusArsip" style="text-align: center; color: #999; margin-bottom: 10px;">
-        Pilih bulan untuk melihat riwayat...
-    </div>
-
-    <div id="isiArsip" style="margin-top: 10px;">
-        </div>
-    
-    <div id="totalArsip" style="margin-top: 20px; font-weight: bold; font-size: 1.2rem; display: none;">
-        Total Pemasukan: <span id="angkaTotalArsip">Rp 0</span>
-    </div>
-</div>
-    <div class="container">
-    <h2 class="judul" style="color: #2c3e50;"><i class="fa fa-archive"></i> Arsip Laba Bulanan</h2>
-
     <div id="daftarArsip">
         </div>
-
-    <button onclick="hapusSemuaArsip()" class="btn btn-outline-hapus" style="width: 100%; margin-top: 30px; border-style: dashed;">
-        <i class="fa fa-trash"></i> Bersihkan Semua Arsip
-    </button>
-</div>
-        <div class="bottom-nav">
+    <button onclick="tokenClient.requestAccessToken()" class="btn" style="width: 100%; margin-bottom: 20px; background: #27ae60; color: white;">
+    <i class="fa fa-cloud-download"></i> Sinkronisasi Cloud (Ambil dari Drive)
+</button>
+       <div class="bottom-nav">
     <a href="index.html" class="nav-item">
         <i class="fa fa-home"></i>
         <span>Home</span>
@@ -71,50 +46,69 @@
         <i class="fa fa-archive"></i>
         <span>Arsip</span>
     </a>
-</div>
+</div>    
     <script>
-      function muatArsip() {
-    let bulan = document.getElementById('pilihArsip').value;
-    let container = document.getElementById('isiArsip');
-    let status = document.getElementById('statusArsip');
-    
-    // Nanti di sini kita panggil script Google Drive API
-    // Untuk sekarang, kita beri simulasi "Loading"
-    status.innerText = "Mencari data di Cloud untuk bulan " + bulan + "...";
-    container.innerHTML = "";
+// 1. KONFIGURASI GOOGLE (Pakai Client ID Baru Abang)
+const CLIENT_ID = '561366474384-9hf22uio84jrj7adafut9r2h15c2ninf.apps.googleusercontent.com'; // Pastikan pakai ID yang catetanduit
+const SCOPES = 'https://www.googleapis.com/auth/drive.file';
 
-    // Contoh simulasi jika data ditemukan (Nanti ini diganti hasil dari Drive)
-    /*
-    tampilkanDataArsip(dataDariDrive); 
-    */
-}
+let tokenClient;
+let accessToken = null;
 
-function tampilkanDataArsip(data) {
-    let html = "";
-    let total = 0;
-
-    data.forEach(item => {
-        html += `
-        <div style="display: flex; justify-content: space-between; padding: 10px 5px; border-bottom: 1px solid #ddd;">
-            <div style="display: flex; flex-direction: column;">
-                <span style="font-size: 0.8rem; color: gray;">${item.tanggal}</span>
-                <span style="font-weight: bold;">${item.keterangan}</span>
-            </div>
-            <span style="font-weight: bold;">Rp ${item.jumlah.toLocaleString()}</span>
-        </div>`;
-        total += item.jumlah;
+// 2. INISIALISASI SAAT HALAMAN DIBUKA
+function initClient() {
+    tokenClient = google.accounts.oauth2.initTokenClient({
+        client_id: CLIENT_ID,
+        scope: SCOPES,
+        callback: (tokenResponse) => {
+            accessToken = tokenResponse.access_token;
+            tarikDataDariDrive(); // Begitu login sukses, langsung tarik data
+        },
     });
-
-    document.getElementById('isiArsip').innerHTML = html;
-    document.getElementById('statusArsip').innerText = "Data berhasil dimuat.";
-    document.getElementById('totalArsip').style.display = "block";
-    document.getElementById('angkaTotalArsip').innerText = "Rp " + total.toLocaleString();
 }
-      
-      /*----------------------------
-      INTIP ARSIP
-      ---------------------------*/
-      function tampilkanArsip() {
+
+// 3. FUNGSI UTAMA: TARIK DATA DARI GOOGLE DRIVE
+async function tarikDataDariDrive() {
+    const wadah = document.getElementById('daftarArsip');
+    wadah.innerHTML = `<div style="text-align:center; padding:20px;"><i class="fa fa-spinner fa-spin"></i> Menghubungkan ke Cloud...</div>`;
+
+    try {
+        // Cari file yang namanya mengandung "Laporan_Lengkap_"
+        const response = await fetch(`https://www.googleapis.com/drive/v3/files?q=name contains 'Laporan_Lengkap_' and mimeType = 'application/json'&fields=files(id, name)`, {
+            headers: { 'Authorization': 'Bearer ' + accessToken }
+        });
+        const resData = await response.json();
+        const files = resData.files;
+
+        if (files && files.length > 0) {
+            let dataCloud = [];
+            
+            // Ambil isi setiap file satu per satu
+            for (let file of files) {
+                const fileRes = await fetch(`https://www.googleapis.com/drive/v3/files/${file.id}?alt=media`, {
+                    headers: { 'Authorization': 'Bearer ' + accessToken }
+                });
+                const isi = await fileRes.json();
+                dataCloud.push(isi);
+            }
+
+            // Gabungkan dengan data lokal agar tidak duplikat (opsional, tapi lebih baik timpa saja)
+            localStorage.setItem('db_laporan_laba', JSON.stringify(dataCloud));
+            tampilkanArsip(); 
+            alert("Sip Bang! " + dataCloud.length + " data dari Drive berhasil ditarik.");
+        } else {
+            alert("Gak ada file laporan di Drive Abang.");
+            tampilkanArsip();
+        }
+    } catch (err) {
+        console.error(err);
+        alert("Waduh, gagal ngambil data dari Cloud.");
+        tampilkanArsip();
+    }
+}
+
+// 4. FUNGSI TAMPILAN (Sudah Modif: Menampilkan Modal & Ringkasan)
+function tampilkanArsip() {
     const wadah = document.getElementById('daftarArsip');
     const dataArsip = JSON.parse(localStorage.getItem('db_laporan_laba')) || [];
 
@@ -122,34 +116,44 @@ function tampilkanDataArsip(data) {
         wadah.innerHTML = `
             <div style="text-align: center; padding: 50px 20px; color: #95a5a6;">
                 <i class="fa fa-folder-open" style="font-size: 3rem; margin-bottom: 10px;"></i>
-                <p>Belum ada laporan yang disimpan, Bang!</p>
+                <p>Belum ada laporan, Bang! <br>Coba klik tombol <b>Sinkronisasi Cloud</b>.</p>
             </div>`;
         return;
     }
 
-    // Urutkan dari yang terbaru (paling atas)
-    dataArsip.reverse();
+    // Urutkan berdasarkan ID (Waktu simpan) terbaru di atas
+    dataArsip.sort((a, b) => b.id - a.id);
 
     let html = "";
     dataArsip.forEach(item => {
         html += `
-        <div class="card-data" style="display: block; border-left: 5px solid #f39c12; margin-bottom: 15px; position: relative;">
+        <div class="card-data" style="display: block; border-left: 5px solid #27ae60; margin-bottom: 15px; background: #fff; padding: 15px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
             <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px;">
                 <div>
-                    <span style="font-weight: bold; font-size: 1.1rem; color: #2c3e50;">${item.bulan}</span>
+                    <span style="font-weight: bold; font-size: 1.1rem; color: #2c3e50;">${item.bulan}</span><br>
+                    <small style="color: #bdc3c7;">${item.tanggalSimpan || ''}</small>
                 </div>
-                <span onclick="hapusSatuArsip(${item.id})" style="color: #e74c3c; cursor: pointer;"><i class="fa fa-times-circle"></i></span>
+                <span onclick="hapusSatuArsip(${item.id})" style="color: #e74c3c; cursor: pointer;"><i class="fa fa-trash"></i></span>
             </div>
             
-            <div style="background: #fdf2e9; padding: 10px; border-radius: 8px; margin-bottom: 10px;">
-                <small style="color: #d35400;">TOTAL LABA BERSIH</small><br>
+            <div style="display: flex; gap: 10px; margin-bottom: 10px; font-size: 0.8rem;">
+                <div style="flex:1; background:#e8f8f5; padding:5px; border-radius:5px;">Masuk: <br><strong>Rp ${item.totalPemasukan?.toLocaleString() || 0}</strong></div>
+                <div style="flex:1; background:#fef9e7; padding:5px; border-radius:5px;">Keluar: <br><strong>Rp ${item.totalPengeluaran?.toLocaleString() || 0}</strong></div>
+            </div>
+
+            <div style="background: #fdf2e9; padding: 10px; border-radius: 8px; margin-bottom: 10px; border: 1px solid #fab1a0;">
+                <small style="color: #d35400;">LABA BERSIH</small><br>
                 <strong style="font-size: 1.2rem; color: #27ae60;">Rp ${item.totalLaba.toLocaleString()}</strong>
             </div>
 
-            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 5px; font-size: 0.75rem; color: #7f8c8d;">
+            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 5px; font-size: 0.75rem; color: #7f8c8d; border-top: 1px solid #eee; pt-10px; padding-top: 10px;">
                 <div>Pemodal:<br><strong style="color: #333;">Rp ${item.bagianPemodal.toLocaleString()}</strong></div>
                 <div>Pengelola:<br><strong style="color: #333;">Rp ${item.bagianPengelola.toLocaleString()}</strong></div>
                 <div>Usaha:<br><strong style="color: #333;">Rp ${item.bagianUsaha.toLocaleString()}</strong></div>
+            </div>
+
+            <div style="margin-top: 10px; font-size: 0.75rem; color: #95a5a6; font-style: italic;">
+                Sisa Modal: Rp ${item.modalSisa?.toLocaleString() || 0}
             </div>
         </div>
         `;
@@ -158,8 +162,9 @@ function tampilkanDataArsip(data) {
     wadah.innerHTML = html;
 }
 
+// Fungsi Hapus Lokal
 function hapusSatuArsip(id) {
-    if (confirm("Yakin mau hapus laporan bulan ini, Bang?")) {
+    if (confirm("Hapus dari HP? (Data di Google Drive tetap ada)")) {
         let dataArsip = JSON.parse(localStorage.getItem('db_laporan_laba')) || [];
         dataArsip = dataArsip.filter(item => item.id !== id);
         localStorage.setItem('db_laporan_laba', JSON.stringify(dataArsip));
@@ -168,16 +173,17 @@ function hapusSatuArsip(id) {
 }
 
 function hapusSemuaArsip() {
-    if (confirm("Gawat! Ini bakal hapus SEMUA riwayat laba. Yakin Bang?")) {
+    if (confirm("Bersihkan tampilan di HP?")) {
         localStorage.removeItem('db_laporan_laba');
         tampilkanArsip();
     }
 }
 
-// Jalankan saat halaman dibuka
+// Panggil tampilan awal
 tampilkanArsip();
-      
-    </script>
-  </body>
 
+</script>    
+<script src="https://accounts.google.com/gsi/client" onload="initClient()" async defer></script>
+<script src="https://apis.google.com/js/api.js" async defer></script>
+  </body>
 </html>
