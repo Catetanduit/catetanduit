@@ -142,7 +142,53 @@ function hapusKeluar(key) {
 
 // Jalankan saat halaman dibuka
 tampilkanKeluar();
+
+ //  BACKUP HARIAN--------
+   function backupHarianKeDrive() {
+    let dataMasuk = JSON.parse(localStorage.getItem('database_pemasukan')) || [];
+    let dataKeluar = JSON.parse(localStorage.getItem('db_keluar')) || [];
+    let tgl = new Date().toLocaleDateString('id-ID');
+
+    // Hitung total buat ringkasan di history nanti
+    let totalIn = dataMasuk.reduce((s, i) => s + i.jumlah, 0);
+    let totalOut = dataKeluar.reduce((s, i) => s + i.jumlah, 0);
+
+    let paketHarian = {
+        id: Date.now(),
+        tanggal: tgl,
+        pemasukan: dataMasuk,
+        pengeluaran: dataKeluar,
+        totalIn: totalIn,
+        totalOut: totalOut
+    };
+
+    // Panggil fungsi upload (Gunakan logika OAuth simpanKeDrive yang sudah kita buat sebelumnya)
+    // Pastikan accessToken sudah ada
+    if (!accessToken) {
+        tokenClient.requestAccessToken();
+    } else {
+        eksekusiUploadHarian(paketHarian);
+    }
+}
+
+function eksekusiUploadHarian(data) {
+    const metadata = {
+        'name': 'Daily_Log_' + data.tanggal.replace(/\//g, '-') + '.json',
+        'mimeType': 'application/json'
+    };
+    const file = new Blob([JSON.stringify(data)], {type: 'application/json'});
+    const formData = new FormData();
+    formData.append('metadata', new Blob([JSON.stringify(metadata)], {type: 'application/json'}));
+    formData.append('file', file);
+
+    fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
+        method: 'POST',
+        headers: new Headers({'Authorization': 'Bearer ' + accessToken}),
+        body: formData
+    }).then(() => alert("History Harian Berhasil di-Backup!"));
+}   
   </script>
   </body>
 
 </html>
+
