@@ -283,11 +283,26 @@ updateDashboardAtas();
   /*-------------------
   SIMPAN LAPORAN
   ---------------------*/
-  function simpanLaporanLaba() {
+ // 1. ALAMAT SI SAKTI (Wajib Ada di Atas)
+const URL_GAS = "https://script.google.com/macros/s/AKfycbzlY0TcT_c9j7gcLC8sp0dR2HI_jmKkVmEvt0p5HZl1WA2uuRSSUndDBN8QbzNqCjhO3w/exec";
+
+// 2. FUNGSI PENGIRIM (Wajib Ada)
+function kirimKeDrive(dataBaru, jenis) {
+    fetch(URL_GAS, {
+        method: "POST",
+        mode: "no-cors", 
+        body: JSON.stringify({
+            jenisLaporan: jenis, 
+            isi: dataBaru
+        })
+    }).catch(err => console.log("Gagal Cloud: ", err));
+}
+
+// 3. FUNGSI SIMPAN ABANG YANG SUDAH DIMODIFIKASI
+function simpanLaporanLaba() {
     let tgl = new Date();
     let namaBulan = tgl.toLocaleString('id-ID', { month: 'long', year: 'numeric' });
     
-    // Ambil angka dari tampilan (hapus tulisan "Rp" dan titik-titik ribuan)
     let laba = document.getElementById('resLaba').innerText.replace(/[^0-9]/g, '');
     let bagiPemodal = document.getElementById('resPemodal').innerText.replace(/[^0-9]/g, '');
     let bagiPengelola = document.getElementById('resPengelola').innerText.replace(/[^0-9]/g, '');
@@ -302,10 +317,14 @@ updateDashboardAtas();
         bagianUsaha: parseInt(bagiUsaha)
     };
 
-    // Simpan ke database laporan (db_laporan_laba)
+    // Simpan ke HP (LocalStorage)
     let dbLaporan = JSON.parse(localStorage.getItem('db_laporan_laba')) || [];
     dbLaporan.push(laporanBaru);
     localStorage.setItem('db_laporan_laba', JSON.stringify(dbLaporan));
+
+    // --- BAGIAN SAKTI: KIRIM KE GOOGLE DRIVE ---
+    kirimKeDrive(laporanBaru, 'laporan_laba_bulanan');
+    // -------------------------------------------
 
     // Notifikasi sukses
     document.getElementById('statusSimpan').style.display = "block";
