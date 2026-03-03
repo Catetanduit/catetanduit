@@ -180,21 +180,6 @@ td.isi_01, td.isi_02, td.isi_03 {
   <button type="button" onclick="simpanKeDrive()" style="padding: 10px 20px; background-color: #2196F3; color: white; border: none; cursor: pointer;">
   Simpan Riwayat ke Google Drive
 </button>
-  <hr>
-<h3>Riwayat Nota (Simulasi)</h3>
-<table border="1" id="tabelRiwayat" style="width: 100%; border-collapse: collapse;">
-    <thead>
-        <tr style="background: #eee;">
-            <th>Customer</th>
-            <th>Total (Rp)</th>
-            <th>Aksi</th>
-        </tr>
-    </thead>
-    <tbody id="isiRiwayat">
-        </tbody>
-</table>
-
-<button onclick="simpanKeRiwayat()" style="margin-top: 10px; padding: 10px; width: 100%;">SIMPAN NOTA KE RIWAYAT</button>
 </div>
 <div style="border:1px solid #0000005e;height: 300px;overflow: overlay;padding: 10px;margin-bottom: 10px;">
  <screenshot>
@@ -751,7 +736,7 @@ return months[d.getMonth()]+' '+d.getDate()+' '+d.getFullYear();
      let nama = document.getElementById('txtNome').value;
     let total = document.getElementById('volum').value; 
       
-window.location.href = "https://catetanduit.blogspot.com/2026/02/pemasukan-harian.html?nama=" + encodeURIComponent(nama) + "&total=" + total;   
+window.location.href = "https://catetanduit.github.io/catetanduit/pemasukan.html?nama=" + encodeURIComponent(nama) + "&total=" + total;   
    }
   
   /*=================================
@@ -771,106 +756,10 @@ function resetTampilan() {
   document.getElementById("memo1").innerHTML = '.awalan{display:none;}';
 }
   
-  /*================================
-  DRIVE
-  ====================================*/
-  function simpanKeRiwayat() {
-    // 1. Ambil data dari input yang Abang maksud
-    const namaCustomer = document.getElementById('txtNome').value || "Tanpa Nama";
-    const totalHarga = document.getElementById('volum').value;
-
-    if (totalHarga === "0" || totalHarga === "") {
-        alert("Total masih nol, Bang! Isi dulu harganya.");
-        return;
-    }
-
-    // 2. Ambil elemen tabel riwayat
-    const tbody = document.getElementById('isiRiwayat');
-
-    // 3. Buat baris baru di tabel
-    const barisBaru = tbody.insertRow();
-
-    // 4. Isi kolomnya
-    barisBaru.insertCell(0).innerText = namaCustomer;
-    barisBaru.insertCell(1).innerText = "Rp " + totalHarga;
-    
-    // Kasih tombol lihat (simulasi)
-    const cellAksi = barisBaru.insertCell(2);
-    cellAksi.innerHTML = '<button onclick="alert(\'Nanti bagian ini bakal narik data detail dari Drive!\')">Lihat Detail</button>';
-
-    alert("Nota " + namaCustomer + " tersimpan di riwayat!");
-}
 </script>
-<script>
-  let tokenClient;
-  let accessToken = null;
-
-  // Ganti pakai Client ID punya Abang
-  const CLIENT_ID = '167260298636-pmgiitt3usb68df61re3e9p9s50h53o7.apps.googleusercontent.com';
-  const SCOPES = 'https://www.googleapis.com/auth/drive.file';
-
-  function initClient() {
-    tokenClient = google.accounts.oauth2.initTokenClient({
-      client_id: CLIENT_ID,
-      scope: SCOPES,
-      callback: (tokenResponse) => {
-        accessToken = tokenResponse.access_token;
-        alert("Siaap! Kita sudah dapet izin akses Drive.");
-      },
-    });
-  }
-
-  function simpanKeDrive() {
-    if (!accessToken) {
-        tokenClient.requestAccessToken();
-        return;
-    }
-
-    const namaCustomer = document.getElementById('txtNome').value || "Tanpa Nama";
-    const totalHarga = document.getElementById('volum').value || "0";
-    
-    // Format teks biar rapi dibaca di HP user
-    let isiNotaTeks = "=== NOTA TRANSAKSI ===\n";
-    isiNotaTeks += "Nama Pelanggan : " + namaCustomer + "\n";
-    isiNotaTeks += "Total Tagihan  : " + totalHarga + "\n";
-    isiNotaTeks += "Tanggal        : " + new Date().toLocaleString() + "\n";
-    isiNotaTeks += "======================\n";
-    isiNotaTeks += "Terima kasih sudah bertransaksi.";
-
-    const file = new Blob([isiNotaTeks], {type: 'text/plain'});
-    
-    const metadata = {
-        'name': 'Nota_' + namaCustomer + '.txt', // Sekarang formatnya .txt
-        'mimeType': 'text/plain'
-    };
-
-    const formData = new FormData();
-    formData.append('metadata', new Blob([JSON.stringify(metadata)], {type: 'application/json'}));
-    formData.append('file', file);
-
-    fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
-        method: 'POST',
-        headers: new Headers({'Authorization': 'Bearer ' + accessToken}),
-        body: formData
-    }).then(res => res.json()).then(val => {
-        alert("Nota " + namaCustomer + " sudah tersimpan di Google Drive Anda!");
-    }).catch(err => {
-        alert("Waduh, ada masalah koneksi ke Drive.");
-    });
-}
-  
-  function gapiLoaded() {
-  // Hanya untuk memastikan library Google API siap
-  gapi.load('client', () => {
-    console.log('GAPI client loaded');
-  });
-}
-</script>
-<script src="https://accounts.google.com/gsi/client" onload="initClient()" async defer></script>
-
-<script src="https://apis.google.com/js/api.js" onload="gapiLoaded()" async defer></script>    
  </body>
 
   </html>
+
 
 
