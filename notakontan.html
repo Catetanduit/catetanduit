@@ -733,14 +733,29 @@ return months[d.getMonth()]+' '+d.getDate()+' '+d.getFullYear();
     // 1. Ambil data dari input nota
     let namaCust = document.getElementById('txtNome').value || "Pelanggan";
     let totalNota = document.getElementById('volum').value;
-
-    // Bersihkan titik jika ada (misal 30.000 jadi 30000)
+    
+    // Bersihkan titik agar jadi angka murni
     let angkaBersih = totalNota.toString().replace(/\./g, "");
 
     if (angkaBersih && angkaBersih !== "0") {
-        // 2. Kirim data ke halaman pemasukan lewat URL (Redirect)
-        // Pastikan path-nya benar sesuai nama file pemasukan Abang
-        window.location.href = "https://catetanduit.github.io/catetanduit/pemasukan.html?nama=" + encodeURIComponent("Nota: " + namaCust) + "&total=" + angkaBersih;
+        // 2. Ambil data lama dari LocalStorage Pemasukan
+        let dataPemasukan = JSON.parse(localStorage.getItem('database_pemasukan')) || [];
+
+        // 3. Masukkan data baru (Suntik Langsung)
+        let tgl = new Date().toLocaleDateString('id-ID'); 
+        dataPemasukan.unshift({
+            tanggal: tgl,
+            keterangan: "Nota: " + namaCust,
+            jumlah: parseInt(angkaBersih)
+        });
+
+        // 4. Simpan kembali ke LocalStorage
+        localStorage.setItem('database_pemasukan', JSON.stringify(dataPemasukan));
+
+        // 5. Eksekusi Print (Opsional, jika Abang mau print beneran)
+        alert("Data Nota Berhasil Disimpan ke Pemasukan!");
+        window.print(); 
+        
     } else {
         alert("Total nota masih kosong, Bang!");
     }
@@ -767,6 +782,7 @@ function resetTampilan() {
  </body>
 
   </html>
+
 
 
 
