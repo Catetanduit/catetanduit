@@ -107,6 +107,34 @@ body {
 <script>
 let dataPemasukan = JSON.parse(localStorage.getItem('database_pemasukan')) || [];
 
+window.onload = function() {
+
+    // 1. CEK APAKAH ADA KIRIMAN DARI NOTA LEWAT URL
+
+    const params = new URLSearchParams(window.location.search);
+
+    const namaNota = params.get('nama');
+
+    const totalNota = params.get('total');
+
+
+
+    if (namaNota && totalNota) {
+
+        simpanData(namaNota, totalNota);
+
+        // Hilangkan parameter di URL biar kalau direfresh nggak masuk dua kali
+
+        window.history.replaceState({}, document.title, window.location.pathname);
+
+    }
+
+
+
+    tampilkanData();
+
+};
+
 // --- SETTING GOOGLE DRIVE ---
 const CLIENT_ID = '561366474384-9hf22uio84jrj7adafut9r2h15c2ninf.apps.googleusercontent.com';
 const SCOPES = 'https://www.googleapis.com/auth/drive.file';
@@ -242,6 +270,7 @@ window.onload = function() { tampilkanData(); };
     </body>
 
   </html>
+
 
 
 
