@@ -17,35 +17,47 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/finansial148/editorgue@main/style-pusat.css">
 <title>History Harian - Catetan Duit</title>
-    <style>
-        /* Desain simpel & bersih ala Catetan Duit */
-        body { font-family: sans-serif; background: #f4f7f6; margin: 0; padding: 15px; color: #333; }
-        .header { display: flex; align-items: center; margin-bottom: 20px; }
-        .header h2 { margin: 0; flex: 1; color: #00a2e9; }
-        .btn-sync { background: #27ae60; color: white; border: none; padding: 10px 15px; border-radius: 8px; cursor: pointer; width: 100%; margin-bottom: 15px; font-weight: bold; }
-        .card-history { background: white; padding: 15px; border-radius: 12px; margin-bottom: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); border-left: 5px solid #00a2e9; }
-        .tgl-judul { font-size: 0.9rem; color: #7f8c8d; margin-bottom: 10px; display: block; border-bottom: 1px dashed #eee; padding-bottom: 5px; }
-        .item-row { display: flex; justify-content: space-between; margin-bottom: 5px; font-size: 0.85rem; }
-        .text-masuk { color: #27ae60; }
-        .text-keluar { color: #e74c3c; }
-        .rekap-kecil { background: #f9f9f9; padding: 8px; border-radius: 5px; margin-top: 10px; display: flex; justify-content: space-between; font-weight: bold; font-size: 0.8rem; }
+<style>
+        html { background-color: #00a2e9; }
+        body { 
+            background-color: white; 
+            margin: 0 auto; 
+            max-width: 500px; 
+            min-height: 100vh; 
+            box-shadow: 0 0 20px rgba(0,0,0,0.2); 
+            padding: 15px;
+            font-family: sans-serif;
+        }
+        .btn-sync {
+            background: #27ae60; color: white; border: none; padding: 10px; 
+            border-radius: 8px; width: 100%; margin-bottom: 20px; cursor: pointer; font-weight: bold;
+        }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th { background: #f2f2f2; padding: 10px; text-align: left; font-size: 12px; }
+        td { padding: 10px; border-bottom: 1px solid #eee; font-size: 13px; }
+        .text-masuk { color: #27ae60; font-weight: bold; }
+        .text-keluar { color: #e74c3c; font-weight: bold; }
     </style>
 </head>
 <body>
 
-<div class="header">
-    <button onclick="window.history.back()" style="border:none; background:none; font-size:1.5rem; margin-right:10px; cursor:pointer;">&larr;</button>
-    <h2>History Harian</h2>
-</div>
+    <h2 style="text-align: center; color: #2c3e50;">
+        <i class="fas fa-history" style="color: #f39c12;"></i> History Arsip
+    </h2>
 
-<button class="btn-sync" onclick="tokenClient.requestAccessToken()">
-    <i class="fa fa-cloud-download"></i> Sinkronisasi Data Harian
-</button>
+    <button class="btn-sync" onclick="tokenClient.requestAccessToken()">
+        <i class="fa fa-cloud-download-alt"></i> Sinkronisasi dari Drive
+    </button>
 
-<div id="wadahHistory">
+    <div id="wadahHistory">
+        <p style="text-align:center; color:#999;">Klik Sinkronisasi untuk melihat data.</p>
     </div>
 
-<script>
+    <script src="https://accounts.google.com/gsi/client" onload="initClient()" async defer></script>
+    <script src="https://apis.google.com/js/api.js" async defer></script>
+
+    <script>
+    // --- KONFIGURASI GOOGLE DRIVE (TETAP PAKAI PUNYA ABANG) ---
     const CLIENT_ID = '561366474384-9hf22uio84jrj7adafut9r2h15c2ninf.apps.googleusercontent.com';
     const SCOPES = 'https://www.googleapis.com/auth/drive.file';
     let tokenClient;
@@ -58,13 +70,12 @@
         });
     }
 
-    // FUNGSI UTAMA: Ambil file history dari Drive
+    // --- FUNGSI AMBIL DATA (Sama seperti kemarin) ---
     async function tarikHistoryDrive() {
         const wadah = document.getElementById('wadahHistory');
         wadah.innerHTML = "<p style='text-align:center;'>Sedang mencari history di awan...</p>";
         
         try {
-            // Cari file dengan awalan "Daily_Log_"
             const response = await fetch(`https://www.googleapis.com/drive/v3/files?q=name contains 'Daily_Log_' and mimeType = 'application/json'&fields=files(id, name)`, {
                 headers: { 'Authorization': 'Bearer ' + accessToken }
             });
@@ -80,42 +91,41 @@
                     const isi = await fileRes.json();
                     gabunganData.push(isi);
                 }
-                // Urutkan dari tanggal terbaru berdasarkan timestamp id
                 gabunganData.sort((a, b) => b.id - a.id);
-                tampilkanKeUI(gabunganData);
+                tampilkanTabelMinimalis(gabunganData); // Pakai fungsi tampilan baru
             } else {
-                wadah.innerHTML = "<p style='text-align:center; color:#999;'>Belum ada history harian di Drive.</p>";
+                wadah.innerHTML = "<p style='text-align:center; color:#999;'>Belum ada data di Drive.</p>";
             }
         } catch (err) {
             alert("Gagal koneksi ke Drive.");
-            console.log(err);
         }
     }
 
-    function tampilkanKeUI(data) {
-        let html = "";
+    // --- FUNGSI TAMPILAN BARU (LEBIH BERSIH & IRIT TEMPAT) ---
+    function tampilkanTabelMinimalis(data) {
+        let html = `
+        <table>
+            <thead>
+                <tr>
+                    <th>Tanggal</th>
+                    <th style="text-align:right">Masuk</th>
+                    <th style="text-align:right">Keluar</th>
+                </tr>
+            </thead>
+            <tbody>`;
+
         data.forEach(log => {
-            let listMasuk = log.pemasukan.map(i => `<div class="item-row"><span>${i.keterangan}</span><span class="text-masuk">+${i.jumlah.toLocaleString()}</span></div>`).join('');
-            let listKeluar = log.pengeluaran.map(i => `<div class="item-row"><span>${i.keterangan}</span><span class="text-keluar">-${i.jumlah.toLocaleString()}</span></div>`).join('');
-            
             html += `
-            <div class="card-history">
-                <span class="tgl-judul"><i class="fa fa-calendar"></i> ${log.tanggal}</span>
-                ${listMasuk}
-                ${listKeluar}
-                <div class="rekap-kecil">
-                    <span>Sisa Hari Ini:</span>
-                    <span style="color:${(log.totalIn - log.totalOut) >= 0 ? '#27ae60' : '#e74c3c'}">
-                        Rp ${(log.totalIn - log.totalOut).toLocaleString()}
-                    </span>
-                </div>
-            </div>`;
+            <tr>
+                <td><strong>${log.tanggal}</strong></td>
+                <td class="text-masuk" style="text-align:right">${log.totalIn.toLocaleString()}</td>
+                <td class="text-keluar" style="text-align:right">${log.totalOut.toLocaleString()}</td>
+            </tr>`;
         });
+
+        html += `</tbody></table>`;
         document.getElementById('wadahHistory').innerHTML = html;
     }
-</script>
-
-<script src="https://accounts.google.com/gsi/client" onload="initClient()" async defer></script>
-<script src="https://apis.google.com/js/api.js" async defer></script>
+    </script>
 </body>
 </html>
