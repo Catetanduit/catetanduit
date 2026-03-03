@@ -316,7 +316,7 @@ function simpanLaporanLaba() {
     let bagiPengelola = document.getElementById('resPengelola').innerText.replace(/[^0-9]/g, '');
     let bagiUsaha = document.getElementById('resUsaha').innerText.replace(/[^0-9]/g, '');
 
-    // C. DATA RINGKASAN & MODAL (Data Tambahan yang Abang minta)
+    // C. DATA RINGKASAN & MODAL
     let r_masuk = document.getElementById('ringkasanMasuk').innerText.replace(/[^0-9]/g, '');
     let r_keluar = document.getElementById('ringkasanKeluar').innerText.replace(/[^0-9]/g, '');
     let m_awal = document.getElementById('inputModalAwal').value || 0;
@@ -328,31 +328,45 @@ function simpanLaporanLaba() {
         id: Date.now(),
         bulan: namaBulan,
         tanggalSimpan: tgl.toLocaleString('id-ID'),
-        // Bagian Laba
         totalLaba: parseInt(laba),
         bagianPemodal: parseInt(bagiPemodal),
         bagianPengelola: parseInt(bagiPengelola),
         bagianUsaha: parseInt(bagiUsaha),
-        // Bagian Ringkasan
         totalPemasukan: parseInt(r_masuk),
         totalPengeluaran: parseInt(r_keluar),
-        // Bagian Modal
         modalAwal: parseInt(m_awal),
         modalSudahKembali: parseInt(m_kembali),
         modalSisa: parseInt(m_sisa)
     };
 
-    // E. SIMPAN KE LOCALSTORAGE (HP)
+    // E. SIMPAN KE LOCALSTORAGE (HP) - Data Detail
     let dbLaporan = JSON.parse(localStorage.getItem('db_laporan_laba')) || [];
     dbLaporan.push(laporanLengkap);
     localStorage.setItem('db_laporan_laba', JSON.stringify(dbLaporan));
 
-    // F. KIRIM KE GOOGLE DRIVE
+    // --- F. TAMBAHAN: UPDATE HISTORY BULANAN (MESIN BARU) ---
+    let historyLama = JSON.parse(localStorage.getItem('history_bulanan_cloud')) || [];
+    let indexData = historyLama.findIndex(item => item.bulan === namaBulan);
+    let ringkasanHistory = {
+        bulan: namaBulan,
+        masuk: parseInt(r_masuk),
+        keluar: parseInt(r_keluar),
+        laba: parseInt(laba),
+        update: tgl.toLocaleDateString('id-ID')
+    };
+    if (indexData !== -1) { historyLama[indexData] = ringkasanHistory; } 
+    else { historyLama.unshift(ringkasanHistory); }
+    localStorage.setItem('history_bulanan_cloud', JSON.stringify(historyLama));
+    // -------------------------------------------------------
+
+    // G. KIRIM KE GOOGLE DRIVE
     if (!accessToken) {
         tokenClient.requestAccessToken();
     } else {
         eksekusiSimpanKeDrive();
     }
+    
+    alert("Laporan & History Berhasil Diarsipkan!");
 }
 
 function eksekusiSimpanKeDrive() {
@@ -390,6 +404,7 @@ updateTampilanModal(); // Fungsi modal yang kemarin juga tetap dipanggil
 <script src="https://apis.google.com/js/api.js" async defer></script>
 </body>
 </html>
+
 
 
 
