@@ -103,29 +103,40 @@
 
     // --- FUNGSI TAMPILAN BARU (LEBIH BERSIH & IRIT TEMPAT) ---
     function tampilkanTabelMinimalis(data) {
-        let html = `
-        <table>
-            <thead>
-                <tr>
-                    <th>Tanggal</th>
-                    <th style="text-align:right">Masuk</th>
-                    <th style="text-align:right">Keluar</th>
-                </tr>
-            </thead>
-            <tbody>`;
+    let html = "";
 
-        data.forEach(log => {
-            html += `
-            <tr>
-                <td><strong>${log.tanggal}</strong></td>
-                <td class="text-masuk" style="text-align:right">${log.totalIn.toLocaleString()}</td>
-                <td class="text-keluar" style="text-align:right">${log.totalOut.toLocaleString()}</td>
-            </tr>`;
-        });
+    data.forEach((log, index) => {
+        // Gabungkan semua rincian customer/keterangan jadi satu teks kecil
+        let rincianPemasukan = log.pemasukan.map(i => `• ${i.keterangan} (Rp ${i.jumlah.toLocaleString()})`).join('<br>');
+        let rincianPengeluaran = log.pengeluaran.map(i => `• ${i.keterangan} (Rp ${i.jumlah.toLocaleString()})`).join('<br>');
 
-        html += `</tbody></table>`;
-        document.getElementById('wadahHistory').innerHTML = html;
-    }
+        html += `
+        <div style="background: white; border-bottom: 1px solid #eee; padding: 10px 0;">
+            <div onclick="toggleDetail(${index})" style="display: flex; justify-content: space-between; cursor: pointer;">
+                <span style="font-weight: bold; font-size: 13px;">${log.tanggal} <i class="fa fa-caret-down" style="font-size: 10px; color: #888;"></i></span>
+                <div style="text-align: right;">
+                    <span class="text-masuk" style="font-size: 12px;">+${log.totalIn.toLocaleString()}</span><br>
+                    <span class="text-keluar" style="font-size: 12px;">-${log.totalOut.toLocaleString()}</span>
+                </div>
+            </div>
+            
+            <div id="detail-${index}" style="display: none; margin-top: 10px; font-size: 11px; background: #f9f9f9; padding: 8px; border-radius: 5px; color: #555;">
+                <div style="color: #27ae60; font-weight: bold; margin-bottom: 4px;">Pemasukan:</div>
+                ${rincianPemasukan || 'Tidak ada'}
+                <div style="color: #e74c3c; font-weight: bold; margin: 4px 0;">Pengeluaran:</div>
+                ${rincianPengeluaran || 'Tidak ada'}
+            </div>
+        </div>`;
+    });
+
+    document.getElementById('wadahHistory').innerHTML = html;
+}
+
+// Fungsi buat buka-tutup detail
+function toggleDetail(id) {
+    let el = document.getElementById('detail-' + id);
+    el.style.display = (el.style.display === 'none') ? 'block' : 'none';
+}
     </script>
 </body>
 </html>
