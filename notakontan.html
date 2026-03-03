@@ -729,12 +729,22 @@ return months[d.getMonth()]+' '+d.getDate()+' '+d.getFullYear();
 } 
   
   
-      function klaporan() {
-     let nama = document.getElementById('txtNome').value;
-    let total = document.getElementById('volum').value; 
-      
-window.location.href = "https://catetanduit.github.io/catetanduit/pemasukan.html?nama=" + encodeURIComponent(nama) + "&total=" + total;   
-   }
+    function klaporan() {
+    // 1. Ambil data dari input nota
+    let namaCust = document.getElementById('txtNome').value || "Pelanggan";
+    let totalNota = document.getElementById('volum').value;
+
+    // Bersihkan titik jika ada (misal 30.000 jadi 30000)
+    let angkaBersih = totalNota.toString().replace(/\./g, "");
+
+    if (angkaBersih && angkaBersih !== "0") {
+        // 2. Kirim data ke halaman pemasukan lewat URL (Redirect)
+        // Pastikan path-nya benar sesuai nama file pemasukan Abang
+        window.location.href = "https://catetanduit.github.io/catetanduit/pemasukan.html?nama=" + encodeURIComponent("Nota: " + namaCust) + "&total=" + angkaBersih;
+    } else {
+        alert("Total nota masih kosong, Bang!");
+    }
+}
   
   /*=================================
   BUKA TUTUP
@@ -757,6 +767,7 @@ function resetTampilan() {
  </body>
 
   </html>
+
 
 
 
