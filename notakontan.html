@@ -734,30 +734,35 @@ return months[d.getMonth()]+' '+d.getDate()+' '+d.getFullYear();
     let namaCust = document.getElementById('txtNome').value || "Pelanggan";
     let totalNota = document.getElementById('volum').value;
     
-    // Bersihkan titik agar jadi angka murni
+    // 2. Bersihkan titik agar jadi angka murni (misal 30.000 jadi 30000)
     let angkaBersih = totalNota.toString().replace(/\./g, "");
 
+    // 3. Validasi: Jangan simpan kalau nominalnya kosong atau nol
     if (angkaBersih && angkaBersih !== "0") {
-        // 2. Ambil data lama dari LocalStorage Pemasukan
+        
+        // 4. Proses "Suntik" data ke LocalStorage Pemasukan
         let dataPemasukan = JSON.parse(localStorage.getItem('database_pemasukan')) || [];
-
-        // 3. Masukkan data baru (Suntik Langsung)
         let tgl = new Date().toLocaleDateString('id-ID'); 
+
         dataPemasukan.unshift({
             tanggal: tgl,
             keterangan: "Nota: " + namaCust,
             jumlah: parseInt(angkaBersih)
         });
 
-        // 4. Simpan kembali ke LocalStorage
+        // 5. Simpan ke Memori HP
         localStorage.setItem('database_pemasukan', JSON.stringify(dataPemasukan));
 
-        // 5. Eksekusi Print (Opsional, jika Abang mau print beneran)
-        alert("Data Nota Berhasil Disimpan ke Pemasukan!");
-        window.print(); 
+        // 6. Bersihkan Form Nota setelah disimpan (biar siap buat nota baru)
+        document.getElementById('txtNome').value = "";
+        document.getElementById('volum').value = "0";
+        if(document.getElementById('output1a')) document.getElementById('output1a').value = "";
+
+        // 7. Kasih tau kalau sudah sukses
+        alert("Nota Berhasil Disimpan ke Pemasukan!");
         
     } else {
-        alert("Total nota masih kosong, Bang!");
+        alert("Waduh Bang, nominalnya masih kosong tuh!");
     }
 }
   
@@ -782,6 +787,7 @@ function resetTampilan() {
  </body>
 
   </html>
+
 
 
 
