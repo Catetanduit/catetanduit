@@ -40,48 +40,69 @@ body {
   .nomin-msk{text-align: right; display: flex; align-items: center; gap: 10px;}
   .nomin-msk span {font-weight: bold; color: #2e7d32;}
   .nomin-msk button {background: #ff4444; color: white; border: none; border-radius: 4px; padding: 2px 8px; cursor: pointer; font-size: 12px;}
+  
+  .nomin-msk button{display:none;}
+  /* Jendela pilihan hapus (awalnya sembunyi) */
+.pilihanhapus {
+    display: none; 
+    background: #fff5f5; 
+    padding: 15px; 
+    border-radius: 12px; 
+    border: 1px dashed #e74c3c;
+    margin-bottom: 20px;
+    grid-template-columns: 1fr 1fr; 
+    gap: 10px;
+}
+
+/* Class pembantu untuk buka-tutup lewat JavaScript */
+.buka-jendela {
+    display: grid !important;
+}
+
+/* Mengatur agar tombol hapus di baris data muncul saat mode hapus aktif */
+.mode-hapus-aktif .nomin-msk button {
+    display: inline-block !important;
+}
 </style>
   </head>
   <body>
 <div class="container" style="padding-bottom: 80px;"> <h2 style="color: #27ae60; text-align: center; margin-bottom: 25px;">
         <i class="fas fa-hand-holding-usd"></i> Laporan Pemasukan
     </h2>
-    
-    <div style="background: white; padding: 15px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); margin-bottom: 25px;">
-        <div style="display: flex; flex-direction: column; gap: 10px;">
-            <input type="text" id="mNama" placeholder="Keterangan (Contoh: Jual Kopi)" 
-                   style="padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 1rem;">
-            
-            <input type="number" id="mTotal" placeholder="Nominal (Tanpa Titik)" 
-                   style="padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 1rem;">
-            
-            <button onclick="inputManual()" 
-                    style="background: #27ae60; color: white; border: none; padding: 12px; border-radius: 8px; font-weight: bold; font-size: 1rem; cursor: pointer;">
-                <i class="fa fa-plus"></i> Tambah Pemasukan
-            </button>
-        </div>
+    <div style="background: #e8f8f5; padding: 15px; border-radius: 10px; margin-top: 20px; border-left: 5px solid #27ae60;">
+        <h3 id="totalSemua" style="margin: 0; color: #1e8449;">Total: Rp 0</h3>
     </div>
+    <div id="tambahin" style="display:none; background: white; padding: 15px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); margin-bottom: 25px;">
+    <div style="display: flex; flex-direction: column; gap: 10px;">
+        <input type="text" id="mNama" placeholder="Keterangan (Contoh: Jual Kopi)" 
+               style="padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 1rem;">
+        
+        <input type="number" id="mTotal" placeholder="Nominal (Tanpa Titik)" 
+               style="padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 1rem;">
+        
+        <button onclick="inputManual()" 
+                style="background: #27ae60; color: white; border: none; padding: 12px; border-radius: 8px; font-weight: bold; font-size: 1rem; cursor: pointer;">
+            <i class="fas fa-paper-plane"></i> Kirim
+        </button>
+    </div>
+    
+    <div id="peringatan" style="color: #d32f2f; font-size: 0.8rem; margin-top: 10px; display: none; font-weight: bold;"></div>
+    <div id="demo" style="color: #2e7d32; font-size: 0.8rem; margin-top: 5px; font-weight: bold;"></div>
+</div>
 
     <div id="bodyTabel">
         </div>
 
-    <div style="background: #e8f8f5; padding: 15px; border-radius: 10px; margin-top: 20px; border-left: 5px solid #27ae60;">
-        <h3 id="totalSemua" style="margin: 0; color: #1e8449;">Total: Rp 0</h3>
-    </div>
-    
-    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 25px;">
-        <button onclick="kirimKeBulanan()" 
-                style="background: #3498db; color: white; border: none; padding: 10px; border-radius: 8px; font-size: 0.8rem; font-weight: bold;">
-            <i class="fa fa-paper-plane"></i> Kirim Bulanan
-        </button>
-        
-        <button onclick="hapusSemua()" 
-                style="background: white; color: #e74c3c; border: 1px solid #e74c3c; padding: 10px; border-radius: 8px; font-size: 0.8rem; font-weight: bold;">
-            <i class="fa fa-trash"></i> Kosongkan
-        </button>
-    </div>
-</div>
 
+</div>
+<div id="boxHapus" class="pilihanhapus">
+    <button onclick="hapusSemua()" style="background: white; color: #e74c3c; border: 1px solid #e74c3c; padding: 10px; border-radius: 8px; font-size: 0.8rem; font-weight: bold; cursor:pointer;">
+        <i class="fa fa-trash-alt"></i> Hapus Semua
+    </button>
+    <button onclick="toggleTombolBaris()" style="background: #e74c3c; color: white; border: none; padding: 10px; border-radius: 8px; font-size: 0.8rem; font-weight: bold; cursor:pointer;">
+        <i class="fa fa-check-square"></i> Pilih Baris
+    </button>
+</div>
 <div class="bottom-nav">
     <a href="index.html" class="nav-item">
         <i class="fa fa-home"></i>
@@ -91,18 +112,18 @@ body {
         <i class="fas fa-hand-holding-usd"></i>
         <span>Masukan</span>
     </a>
-    <a href="pengluaran.html" class="nav-item">
-        <i class="fas fa-shopping-cart"></i>
-        <span>Keluaran</span>
+ <a onclick="bukaTutupHapus()" class="nav-item" style="cursor:pointer;">
+    <i class="fa fa-trash"></i>
+    <span>Hapus</span>
+</a>
+    <a onclick="kirimKeBulanan()" class="nav-item">
+        <i class="fas fa-paper-plane"></i>
+        <span>Kirim Bulanan</span>
     </a>
-    <a href="bagihasil.html" class="nav-item">
-        <i class="fas fa-chart-pie"></i>
-        <span>Laba</span>
-    </a>
-    <a href="arsip.html" class="nav-item">
-        <i class="fa fa-archive"></i>
-        <span>Arsip</span>
-    </a>
+<a onclick="bukaTutupTambah()" class="nav-item" style="cursor:pointer;">
+    <i class="fa fa-plus"></i>
+    <span>Tambah</span>
+</a>
 </div>
 <script>
 let dataPemasukan = JSON.parse(localStorage.getItem('database_pemasukan')) || [];
@@ -206,14 +227,57 @@ async function uploadKeDrive() {
     });
 }
 
-// Fungsi input manual & tampilkan (Tetap seperti aslinya)
+// 1. Fungsi Buka-Tutup Manual (Klik Tombol Plus)
+function bukaTutupTambah() {
+    let x = document.getElementById("tambahin");
+    if (x.style.display === "none") {
+        x.style.display = "block";
+        document.getElementById('mNama').focus(); // Otomatis kursor di input nama
+    } else {
+        x.style.display = "none";
+        // Bersihkan peringatan kalau form ditutup manual
+        document.getElementById("peringatan").style.display = "none";
+    }
+}
+
+// 2. Fungsi Kirim Data
 function inputManual() {
-    let ket = document.getElementById('mNama').value;
-    let nom = document.getElementById('mTotal').value;
-    if(ket && nom) {
+    const inputNama = document.getElementById('mNama');
+    const inputTotal = document.getElementById('mTotal');
+    const pesanPeringatan = document.getElementById("peringatan");
+    const demo = document.getElementById("demo");
+    const boxForm = document.getElementById("tambahin");
+
+    let ket = inputNama.value.trim();
+    let nom = inputTotal.value.trim();
+
+    // Validasi: Cek apakah kosong
+    if (ket === "" || nom === "" || nom === "0") {
+        pesanPeringatan.style.display = "block";
+        pesanPeringatan.innerHTML = " kolom tidak boleh kosong!";
+        
+        // Form tetap terbuka (display: block)
+        boxForm.style.display = "block"; 
+        
+    } else {
+        // Jika data benar:
+        pesanPeringatan.style.display = "none";
+        
+        // Simpan Data
         simpanData(ket, nom);
-        document.getElementById('mNama').value = "";
-        document.getElementById('mTotal').value = "";
+
+        // Beri efek sukses
+        demo.innerHTML = " Data berhasil dikirim!";
+        
+        // Kosongkan input
+        inputNama.value = "";
+        inputTotal.value = "";
+
+        // Tutup Form Otomatis karena data sudah masuk
+        setTimeout(() => { 
+            boxForm.style.display = "none"; 
+            demo.innerHTML = ""; 
+        }, 1000); // Tutup setelah 1 detik biar user sempat lihat tulisan sukses
     }
 }
 
@@ -236,6 +300,36 @@ function hapusBaris(index) {
         mulaiBackup(); // Update Drive juga
     }
 }
+
+function hapusSemua() {
+    if(confirm("Yakin mau hapus semua laporan bulan ini?")) {
+        localStorage.removeItem('database_pemasukan');
+        dataPemasukan = [];
+        tampilkanData();
+    }
+}
+
+function bukaTutupHapus() {
+    const box = document.getElementById("boxHapus");
+    // Buka atau tutup jendela pilihan
+    box.classList.toggle("buka-jendela");
+    
+    // Jika jendela ditutup, otomatis matikan mode hapus di baris data juga
+    if (!box.classList.contains("buka-jendela")) {
+        document.body.classList.remove("mode-hapus-aktif");
+    }
+}
+
+function toggleTombolBaris() {
+    // Menambah/menghapus class di BODY supaya tombol hapus di setiap baris (nomin-msk) muncul
+    document.body.classList.toggle("mode-hapus-aktif");
+    
+    const aktif = document.body.classList.contains("mode-hapus-aktif");
+    if(aktif) {
+        alert("Mode hapus terpilih aktif! Silakan klik ikon sampah di baris data.");
+    }
+}
+
 
 function kirimKeBulanan() {
 
@@ -270,7 +364,6 @@ window.onload = function() { tampilkanData(); };
     </body>
 
   </html>
-
 
 
 
