@@ -87,8 +87,8 @@ textarea {
     justify-content: space-between;margin-bottom: 15px;
 }
  img.thumb {
-    width: 60px;
-    height: 60px;
+    width: 50px;
+    height: auto;
     border: 0;
     box-shadow: none;background: transparent;
 } 
@@ -114,12 +114,11 @@ textarea {
   td.isi_1,td.isi_2,td.isi_3 {
     font-size: 13px;
     font-weight: bold;
-    text-align: center;
 }
   div#RekininG {
     background: #00adff52;
     padding: 5px;
-    font-size: 12px;margin-top: 15px;margin-bottom: 10px;
+    font-size: 12px;margin-top: 50px;margin-bottom: 10px;color: #0037ff;
 }
   .kolom-bawah {
     display: flex;
@@ -207,7 +206,7 @@ td.isi_01, td.isi_02, td.isi_03 {
     <div class="nota_opik2">
       <div class="banner">
       <div class="bannerlogo"><output id="list"></output></div>
-      <div class="bannerusaha">
+      <div class="bannerusaha" style="padding: 0px 5px;">
         <div class="tinggi"></div>
         <div id="tokoku"></div>
         <div id="KETsahaKu"></div>
@@ -215,7 +214,7 @@ td.isi_01, td.isi_02, td.isi_03 {
         
       <div class="bannerstatus" style="font-size: 12px;">
         <b>NOTA KONTAN</b>
-               <div class="notak">Nmr : <w id="counter3"></w></div>
+               <div style="color: #ff5200;">Nmr : <w id="counter3"></w></div>
              <div>Tgl : <w id="para1"></w></div>
         <kepada>Kpd : <output id="output1a"></output></kepada>
         </div>        
@@ -268,7 +267,7 @@ td.isi_01, td.isi_02, td.isi_03 {
   </div> 
       <div class="kolom-bawah">
         <div style="color: #0000004d;font-size: 13px;">Hormat kami</div>       
-        <img id="output-image" style="width: 100px;border: 0;box-shadow: none;" src="" alt="Output Tanda Tangan">
+        <img id="output-image" style="width: 80px;border: 0;box-shadow: none;" src="" alt="Output Tanda Tangan">
         <div id="NamaKU" style="font-size: 13px;"></div>
       </div>
       </div>
@@ -806,4 +805,5 @@ function resetTampilan() {
  </body>
 
   </html>
+
 
