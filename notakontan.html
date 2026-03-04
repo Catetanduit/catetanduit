@@ -67,13 +67,6 @@
 textarea {
     margin-top: 10px;
     height: 80px;
-}
- button.tbl-Eedt {
-    border: 1px solid #0000006b;
-    padding: 10px 20px;
-    border-radius: 5px;
-    background: blue;
-    color: white;
 } 
   
   #output4b {
@@ -346,8 +339,13 @@ td.isi_01, td.isi_02, td.isi_03 {
         <i class="fa fa-home"></i>
         <span>Home</span>
     </a>
-<button onclick="editnota()" class="tbl-Eedt">Edit Nota</button>
-<buttoni onclick="cetak()"class="btn btn-pemasukan">Simpan dan cetak</buttoni>
+<a class="nav-item Eedt" onclick="editnota()">
+  <i class="fa fa-edit"></i>
+  <span>Edit Nota</span>
+  </a>
+<buttoni onclick="cetak()"class="nav-item">
+  <i aria-hidden="true" class="fa fa-paper-plane"></i>
+  <span>Simpan dan cetak</span></buttoni>
 </div>
  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script>
@@ -796,7 +794,7 @@ function resetTampilan() {
 }
   
  function editnota() {
-  document.getElementById("memo1").innerHTML = '.awalan,.tamnot,button.tbl-Eedt,.btn-pemasukan{display:none;}';
+  document.getElementById("memo1").innerHTML = '.awalan,.tamnot,a.Eedt,buttoni.nav-item{display:none;}';
 }
   function lihatnota() {
   document.getElementById("memo2").innerHTML = '.tamnot{display:block;}.kotak-atur{display:none;}';
@@ -808,8 +806,3 @@ function resetTampilan() {
  </body>
 
   </html>
-
-
-
-
-
