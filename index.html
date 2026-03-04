@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -16,8 +17,28 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"/>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/finansial148/editorgue@main/style-pusat.css">
     <title></title>
-  <h2 class="judul">home</h2>
   <style>
+body {
+    margin: 0;
+    padding: 0;
+}
+i.fa.fa-trash {
+    display: none;
+}
+  .card-data {
+    background: white;
+    border-radius: 12px;
+    padding: 15px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+    border-left: 5px solid #ccc; /* Warna default */
+    display: flex;
+}
+
+#ringkasanLaba {
+    font-family: 'Segoe UI', Roboto, sans-serif;
+    letter-spacing: -1px;
+    font-weight: 800;
+}
 .kotak {
     width: 100%;
     margin: auto;
@@ -46,13 +67,13 @@
     padding: 10px;
     border-radius: 15px;
     box-shadow: 0px 4px 6px rgba(0,0,0,0.2);
-    background: #ffffff;
+    background: #000000;
     text-align: center;
     text-decoration: none;
 }
 .kotak w {
     font-size: 11px;
-    color: #a72b2b;
+    color: #ffffff;
     font-weight: bold;
     line-height: 1.2;
 }
@@ -63,7 +84,24 @@
   </style>
   </head>
   <body>
+  <header style="background:#00a2e9;padding: 10px;padding-top: 0;">
+  <h2 id="tokoku" style="margin: 0;padding: 5px;">Catetanduit</h2>
 <div id="para1"></div>
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+    <div class="card-data" style="flex-direction: column; align-items: flex-start; border-left-color: #2e7d32;">
+        <span style="font-size: 0.7rem; color: #7f8c8d;">TOTAL PEMASUKAN</span>
+        <span class="text-harga" id="ringkasanMasuk" style="color: #2e7d32;">Rp 0</span>
+    </div>
+    <div class="card-data" style="flex-direction: column; align-items: flex-start; border-left-color: #d32f2f;">
+        <span style="font-size: 0.7rem; color: #7f8c8d;">TOTAL PENGELUARAN</span>
+        <span class="text-harga" id="ringkasanKeluar" style="color: #d32f2f;">Rp 0</span>
+    </div>
+</div>
+    <div id="boxLabaBersih" style="display: flex;flex-direction: row;align-items: center;justify-content: space-between;background: #fdfdfdfc;border: 1px solid #0000004d;padding: 5px;border-radius: 5px;">
+    <span style="font-size: 10px;color: #7f8c8d;">LABA BERSIH SAAT INI</span>
+    <div id="ringkasanLaba" style="color: rgb(21, 101, 192);">Rp 0</div>
+</div>
+</header>
     <div class="container">
 <div style="height:100%; max-width: 350px; display: flex; margin: auto; padding-top: 20px;">
   <div class="kotak"> 
@@ -152,7 +190,45 @@ if (rekapEl) {
         setTimeout(() => { rekapEl.style.display = 'none'; }, 2000);
     }, 7000); // Tampil 7 detik baru mulai pudar
 }
-</script>   
+
+        function NUsahaAku() {
+            const saveWb = localStorage.getItem('NamaUsahaku');
+            document.getElementById('tokoku').innerHTML =  saveWb ? saveWb : 'Catetanduit' ;
+			}
+			NUsahaAku();
+</script> 
+  <script>
+function updateRingkasanDashboard() {
+    // 1. Ambil data dari LocalStorage
+    let dataMasuk = JSON.parse(localStorage.getItem('database_pemasukan')) || [];
+    let dataKeluar = JSON.parse(localStorage.getItem('database_pengeluaran')) || [];
+
+    // 2. Hitung Total Pemasukan
+    let totalMasuk = dataMasuk.reduce((acc, item) => acc + parseInt(item.jumlah || 0), 0);
+
+    // 3. Hitung Total Pengeluaran
+    let totalKeluar = dataKeluar.reduce((acc, item) => acc + parseInt(item.jumlah || 0), 0);
+
+    // 4. Hitung Laba Bersih
+    let labaBersih = totalMasuk - totalKeluar;
+
+    // 5. Tampilkan ke HTML (UI)
+    document.getElementById('ringkasanMasuk').innerText = "Rp " + totalMasuk.toLocaleString('id-ID');
+    document.getElementById('ringkasanKeluar').innerText = "Rp " + totalKeluar.toLocaleString('id-ID');
+    document.getElementById('ringkasanLaba').innerText = "Rp " + labaBersih.toLocaleString('id-ID');
+
+    // 6. Bonus: Warna Laba Bersih (Biru kalau untung, Merah kalau minus)
+    const boxLaba = document.getElementById('ringkasanLaba');
+    if (labaBersih < 0) {
+        boxLaba.style.color = "#d32f2f"; // Merah
+    } else {
+        boxLaba.style.color = "#1565c0"; // Biru Ori
+    }
+}
+
+// Jalankan fungsi saat halaman dibuka
+window.addEventListener('load', updateRingkasanDashboard);
+</script>
 </body>
 
 </html>
