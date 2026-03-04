@@ -46,7 +46,7 @@
 .dada_tengah input[type="text"],
 .dada_tengah input[type="number"],
 .dada_tengah textarea {
-    width: 100%; 
+    width: 100%;padding: 5px; 
     box-sizing: border-box; /* WAJIB: biar padding input nggak bikin dia tembus keluar */
     display: block;
 }
@@ -58,7 +58,7 @@
 
 /* CSS Abang yang tadi bisa dihapus/diganti dengan yang lebih simpel ini */
 #txtNome {
-    margin-bottom: 10px;
+    margin-bottom: 10px;padding:10px;
 }
 
 textarea {
@@ -75,16 +75,16 @@ textarea {
   
   #output4b {
     white-space: pre-wrap; /* Ini kuncinya, Bang! */
-    word-wrap: break-word; /* Biar kalau kepanjangan nggak bablas ke kanan */
-    border: 1px solid #ccc; /* Opsional, biar kelihatan batasnya */
-    padding: 10px;margin-bottom: 10px;
+    word-wrap: break-word; /* Biar kalau kepanjangan nggak bablas ke kanan */ 
+    /*border: 1px solid #cccccc78;padding: 10px;max-width: 200px;*/margin-bottom: 10px;font-size: 12px;
+    color: #000000a6;
 }
   .nota_opik2{border:0px solid;padding:5px;max-width:400px;margin:auto;}
   .banner {
     border:0px solid;
     display: flex;
     flex-direction: row;
-    justify-content: space-between;
+    justify-content: space-between;margin-bottom: 15px;
 }
  img.thumb {
     width: 60px;
@@ -95,9 +95,31 @@ textarea {
   #tokoku i.fa.fa-trash,#KETsahaKu opik,#ALmtUsaHA i.fa.fa-trash,#RekininG i.fa.fa-trash,#NamaKU i.fa.fa-trash,span#Resmi opik {
     display: none;
 }
+  div#tokoku {
+    font-weight: bold;
+    font-size: 20px;
+}
   #namausaha,#jenisusaha,#alamtusaha,#nomrek,#nampri {
     display: flex;
-    justify-content: space-between;
+    justify-content: space-between;padding: 5px;
+    border-bottom: 1px solid;
+}
+  div#ALmtUsaHA {
+    color: #0000005c;padding: 0px 5px;
+}
+  div#KETsahaKu {
+    font-size: 12px;
+    color: #000000bf;
+}
+  td.isi_1,td.isi_2,td.isi_3 {
+    font-size: 13px;
+    font-weight: bold;
+    text-align: center;
+}
+  div#RekininG {
+    background: #00adff52;
+    padding: 5px;
+    font-size: 12px;margin-top: 15px;margin-bottom: 10px;
 }
   .kolom-bawah {
     display: flex;
@@ -119,12 +141,15 @@ td.isi_01, td.isi_02, td.isi_03 {
     background:#2196F3;color:white;
 }
   .pengaturan button {
-    background: yellow;
+    background: #0089ff;color:white;
     border: 1px solid #00000061;
-    border-radius: 3px;
+    border-radius: 3px;padding: 5px;
+}
+  .pengaturan input {
+    padding: 5px;
 }
 </style>
-<style id="memo"></style><style id="memo1"></style>
+<style id="memo"></style><style id="memo1"></style><style id="memo2"></style>
   </head>
   <body>
 <div class="awalan">
@@ -175,10 +200,9 @@ td.isi_01, td.isi_02, td.isi_03 {
         <textarea id="keterangan" onkeyup="ak()" type="text" placeholder="keterangan"></textarea>
    </div>
     </div>
-<button onclick="editnota()" class="tbl-Eedt">Edit Nota</button><buttoni onclick="cetak()"class="btn btn-pemasukan">Simpan dan cetak</buttoni><button onclick="klaporan()" class="tbl-Eedt">Laporang p</button>
 <button onclick="reset_counter3()" style="display:none;">Reset</button>
 </div>
-<div style="border:1px solid #0000005e;height: 300px;overflow: overlay;padding: 10px;margin-bottom: 10px;">
+<div class="tamnot" style="overflow: overlay;padding: 10px;margin-bottom: 10px;">
  <screenshot>
     <div class="nota_opik2">
       <div class="banner">
@@ -190,7 +214,7 @@ td.isi_01, td.isi_02, td.isi_03 {
         </div>
         
       <div class="bannerstatus" style="font-size: 12px;">
-        <spanFA>NOTA</spanFA>
+        <b>NOTA KONTAN</b>
                <div class="notak">Nmr : <w id="counter3"></w></div>
              <div>Tgl : <w id="para1"></w></div>
         <kepada>Kpd : <output id="output1a"></output></kepada>
@@ -232,26 +256,28 @@ td.isi_01, td.isi_02, td.isi_03 {
      <td class="isi_01"><output id="output1k"></output></td><td class="isi_02"><output id="output2k"></output></td><td class="isi_03"><output id="output3k"></output></td>
     </tr>
     <tr>
-     <td class="isi_01" style="width: 200px;border:0;">Total</td><td colspan="2" valign="top" width="125" class="totali"><w id="nilay" style="position:relative;margin:5px;"></w></td>
+     <td class="isi_01" style="width: 200px;border:0;">Total</td><td colspan="2" valign="top" width="125" class="totali" style="border-bottom: 1px solid #00000029;"><w id="nilay" style="position:relative;margin:5px;font-size:12px;font-weight:bold;"></w></td>
     </tr>
     </table>
       <div id="RekininG"></div>
-    <div class="keterangan">      
+    
+      <div style="display: flex;justify-content: space-between;">
+       <div class="keterangan" style="width: 200px;">      
     <u style="color: #0000004d;font-size: 13px;">Keterangan:</u>
 <div id="output4b"></div>
-  </div>
-      <div style="display: flex;justify-content: flex-end;">
+  </div> 
       <div class="kolom-bawah">
         <div style="color: #0000004d;font-size: 13px;">Hormat kami</div>       
         <img id="output-image" style="width: 100px;border: 0;box-shadow: none;" src="" alt="Output Tanda Tangan">
-        <div id="NamaKU"></div>
+        <div id="NamaKU" style="font-size: 13px;"></div>
       </div>
       </div>
-      <div class="tanda" style="font-size: 10px;color: #00000040;">Nota resmi - App x2558 - Nota Dibuat oleh <span id="Resmi"></span></div>
+      <div class="tanda" style="font-size: 10px;color: #00000040;margin-top: 15px;">Nota resmi - App Catetanduit - Nota Dibuat oleh <span id="Resmi"></span></div>
 </div>
       </screenshot>
+ <input type="button" value="Tutup" onclick="tutupnota()" class="ttd"> 
 </div>
-<div style="border: 1px solid #0000005e;height: 300px;overflow: overlay;padding: 10px;">
+<div class="kotak-atur" style="overflow: overlay;padding: 10px;">
 <div class="pengaturan" style="max-width: 500px;margin: auto;">
   <div style="display: flex;justify-content: space-between;align-items: center;">
     <label for="files" id="customButton">
@@ -295,17 +321,21 @@ td.isi_01, td.isi_02, td.isi_03 {
         <button onclick="NamaPri()" class="ws1">Kirim</button>
   </wc>
     </div>
- <input type="button" value="Tanda tangan" onclick="tutupKolom('kotak')" class="ttd">  
+ <input type="button" value="Tanda tangan" onclick="tutupKolom('kotak')" class="ttd">
+ <input type="button" value="Lihat nota" onclick="lihatnota()" class="ttd">
   <div class="kotak">
-    <input type="reset" value="tutup" onclick="resetTampilan()">
+    <div style="position: fixed;top: 0;background: white;width: 100%;height: 100%;">
+    
     <div id="canvas-container">
         <canvas id="signatureCanvas" width="300" height="400"></canvas>
     </div>
     <div class="controls">
         <button id="clearBtn">Bersihkan</button>
         <button id="saveBtn">Simpan</button>
+      <button type="reset" onclick="resetTampilan()">Tutup</button>
     </div>
     <div id="custom-notification">Tanda tangan berhasil disimpan!</div>
+    </div>
   </div>
   </div>
 </div>
@@ -314,22 +344,8 @@ td.isi_01, td.isi_02, td.isi_03 {
         <i class="fa fa-home"></i>
         <span>Home</span>
     </a>
-    <a href="pemasukan.html" class="nav-item">
-        <i class="fas fa-hand-holding-usd"></i>
-        <span>Masukan</span>
-    </a>
-    <a href="pengluaran.html" class="nav-item">
-        <i class="fas fa-shopping-cart"></i>
-        <span>Keluaran</span>
-    </a>
-    <a href="bagihasil.html" class="nav-item">
-        <i class="fas fa-chart-pie"></i>
-        <span>Laba</span>
-    </a>
-    <a href="arsip.html" class="nav-item">
-        <i class="fa fa-archive"></i>
-        <span>Arsip</span>
-    </a>
+<button onclick="editnota()" class="tbl-Eedt">Edit Nota</button>
+<buttoni onclick="cetak()"class="btn btn-pemasukan">Simpan dan cetak</buttoni>
 </div>
  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script>
@@ -367,7 +383,7 @@ function caravolum() {
 // kirim total ke nota
   function ak(){
     const kosng = document.getElementById('keterangan').value;
-   document.getElementById('output4b').innerHTML =kosng;
+   document.getElementById('output4b').innerHTML ='<div style="max-width: 200px;border: 1px solid #cccccc78;padding:10px;">'+kosng+'</div>';
   }
   
   
@@ -711,25 +727,6 @@ localStorage.setItem("counter3", n);
  
 document.getElementById('counter3').innerHTML = n;
   
-   }
- 
-function reset_counter3() {
-    localStorage.removeItem('counter3');
-}
-  
-//tanggal
-document.getElementById("para1").innerHTML = formatAMPM();
-
-function formatAMPM() {
-var d = new Date(),
-    hours = d.getHours().toString().length == 1 ? '0'+d.getHours() : d.getHours(),
-    months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-return months[d.getMonth()]+' '+d.getDate()+' '+d.getFullYear();
-  
-} 
-  
-  
-    function klaporan() {
     // 1. Ambil data dari input nota
     let namaCust = document.getElementById('txtNome').value || "Pelanggan";
     let totalNota = document.getElementById('volum').value;
@@ -754,9 +751,9 @@ return months[d.getMonth()]+' '+d.getDate()+' '+d.getFullYear();
         localStorage.setItem('database_pemasukan', JSON.stringify(dataPemasukan));
 
         // 6. Bersihkan Form Nota setelah disimpan (biar siap buat nota baru)
-        document.getElementById('txtNome').value = "";
-        document.getElementById('volum').value = "0";
-        if(document.getElementById('output1a')) document.getElementById('output1a').value = "";
+  //      document.getElementById('txtNome').value = "";
+   //     document.getElementById('volum').value = "0";
+    //    if(document.getElementById('output1a')) document.getElementById('output1a').value = "";
 
         // 7. Kasih tau kalau sudah sukses
         alert("Nota Berhasil Disimpan ke Pemasukan!");
@@ -765,6 +762,23 @@ return months[d.getMonth()]+' '+d.getDate()+' '+d.getFullYear();
         alert("Waduh Bang, nominalnya masih kosong tuh!");
     }
 }
+function reset_counter3() {
+    localStorage.removeItem('counter3');
+}
+  
+//tanggal
+document.getElementById("para1").innerHTML = formatAMPM();
+
+function formatAMPM() {
+var d = new Date(),
+    hours = d.getHours().toString().length == 1 ? '0'+d.getHours() : d.getHours(),
+    months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+return months[d.getMonth()]+' '+d.getDate()+' '+d.getFullYear();
+  
+} 
+  
+  
+    
   
   /*=================================
   BUKA TUTUP
@@ -780,17 +794,15 @@ function resetTampilan() {
 }
   
  function editnota() {
-  document.getElementById("memo1").innerHTML = '.awalan{display:none;}';
+  document.getElementById("memo1").innerHTML = '.awalan,.tamnot,button.tbl-Eedt,.btn-pemasukan{display:none;}';
 }
-  
+  function lihatnota() {
+  document.getElementById("memo2").innerHTML = '.tamnot{display:block;}.kotak-atur{display:none;}';
+}
+    function tutupnota() {
+  document.getElementById("memo2").innerHTML = '';
+}
 </script>
  </body>
 
   </html>
-
-
-
-
-
-
-
