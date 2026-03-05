@@ -201,7 +201,7 @@ if (rekapEl) {
 function updateRingkasanDashboard() {
     // 1. Ambil data dari LocalStorage
     let dataMasuk = JSON.parse(localStorage.getItem('database_pemasukan')) || [];
-    let dataKeluar = JSON.parse(localStorage.getItem('database_pengeluaran')) || [];
+    let dataKeluar = JSON.parse(localStorage.getItem('db_keluar')) || [];
 
     // 2. Hitung Total Pemasukan
     let totalMasuk = dataMasuk.reduce((acc, item) => acc + parseInt(item.jumlah || 0), 0);
@@ -232,5 +232,6 @@ window.addEventListener('load', updateRingkasanDashboard);
 </body>
 
 </html>
+
 
 
