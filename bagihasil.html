@@ -78,9 +78,7 @@
     Total Persen: 100% (Sesuai)
 </p>
         <button onclick="hitungBagiHasil()" class="btn" style="background: #f39c12; color: white; width: 100%; justify-content: center;">Hitung Laba & Bagi Hasil</button>
-      <button onclick="shareWA()" class="btn" style="background-color: #25D366; color: white; width: 100%; margin-top: 10px; justify-content: center;">
-    <i class="fa fa-whatsapp"></i> Kirim Laporan ke WA
-</button>
+
     </div>
 
     <div id="hasilBagi" style="margin-top: 20px; display: none;">
@@ -93,10 +91,6 @@
     </div>
      
 </div>
-    
-    <button onclick="simpanLaporanLaba()" class="btn btn-pemasukan" style="width: 100%; margin-top: 15px; background-color: #2e7d32;">
-    <i class="fa fa-save"></i> Simpan Laporan ke Arsip
-</button>
 
 <div id="statusSimpan" style="text-align: center; font-size: 0.8rem; margin-top: 10px; color: #2e7d32; display: none;">
     Laporan berhasil disimpan!
@@ -110,18 +104,27 @@
         <i class="fas fa-hand-holding-usd"></i>
         <span>Masukan</span>
     </a>
-    <a href="pengluaran.html" class="nav-item">
-        <i class="fas fa-shopping-cart"></i>
-        <span>Keluaran</span>
+    <a onclick="shareWA()" class="nav-item">
+        <i class="fab fa-whatsapp"></i>
+        <span>Kirim</span>
     </a>
     <a href="bagihasil.html" class="nav-item active">
         <i class="fas fa-chart-pie"></i>
         <span>Laba</span>
     </a>
-    <a href="arsip.html" class="nav-item">
-        <i class="fa fa-archive"></i>
-        <span>Arsip</span>
+    <a onclick="simpanLaporanLaba()" class="nav-item">
+        <i class="fa fa-save"></i>
+        <span>Arsipkan</span>
     </a>
+</div>
+    <div id="modalNotif" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 9999; align-items: center; justify-content: center;">
+    <div style="border: 1px solid #444; width: 80%; max-width: 280px; padding: 25px; background: #000000; border-radius: 15px; text-align: center; color: white; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+        <div id="isiNotif" style="margin-bottom: 20px; font-size: 0.95rem; line-height: 1.5;">
+            </div>
+        <button onclick="tutupModal()" style="background: white; color: black; border: none; padding: 10px 25px; border-radius: 8px; font-weight: bold; cursor: pointer; width: 100%;">
+            Oke, Siap!
+        </button>
+    </div>
 </div>
 <script>
   // Pasang event listener biar ngecek otomatis tiap angka berubah
@@ -145,32 +148,27 @@ document.querySelectorAll('#pctPemodal, #pctPengelola, #pctUsaha').forEach(input
     });
 });
   
-  function hitungBagiHasil() {
-    // 1. Ambil nilai persentase dari input
+let sudahHitung = false;
+
+function hitungBagiHasil() {
+    // 1. Ambil nilai persentase
     let pctPemodal = parseFloat(document.getElementById('pctPemodal').value) || 0;
     let pctPengelola = parseFloat(document.getElementById('pctPengelola').value) || 0;
     let pctUsaha = parseFloat(document.getElementById('pctUsaha').value) || 0;
 
-    // 2. Cek Totalnya
+    // 2. Cek Total
     let totalPersen = pctPemodal + pctPengelola + pctUsaha;
 
-    // 3. Validasi: Harus pas 100%
+    // 3. Validasi Modal (Ganti Alert)
     if (totalPersen !== 100) {
-        alert("Waduh Bang, total persentasenya " + totalPersen + "%. Harus pas 100% ya biar adil!");
-        return; // Berhenti di sini, jangan lanjut hitung
+        tampilkanModal("<b>Persentase Salah!</b><br>Totalnya " + totalPersen + "%. Harus pas 100% ya Bang biar pembagiannya adil!");
+        return; 
     }
 
-    // --- Jika lolos validasi (Pas 100%), lanjut simpan & hitung ---
-    
-    // Simpan settingan ke localStorage
-    let settingPersen = {
-        pemodal: pctPemodal,
-        pengelola: pctPengelola,
-        usaha: pctUsaha
-    };
+    // --- Lanjut Hitung ---
+    let settingPersen = { pemodal: pctPemodal, pengelola: pctPengelola, usaha: pctUsaha };
     localStorage.setItem('setting_persen_umkm', JSON.stringify(settingPersen));
 
-    // Ambil data uang (Pemasukan & Pengeluaran)
     let dbMasuk = JSON.parse(localStorage.getItem('database_pemasukan')) || [];
     let totalMasuk = dbMasuk.reduce((sum, item) => sum + item.jumlah, 0);
 
@@ -179,12 +177,18 @@ document.querySelectorAll('#pctPemodal, #pctPengelola, #pctUsaha').forEach(input
 
     let labaBersih = totalMasuk - totalKeluar;
 
-    // Tampilkan Hasil (Persentase desimal)
+    // Tampilkan Hasil ke UI
     document.getElementById('hasilBagi').style.display = "block";
     document.getElementById('resLaba').innerText = "Rp " + labaBersih.toLocaleString();
     document.getElementById('resPemodal').innerText = "Rp " + (labaBersih * (pctPemodal / 100)).toLocaleString();
     document.getElementById('resPengelola').innerText = "Rp " + (labaBersih * (pctPengelola / 100)).toLocaleString();
     document.getElementById('resUsaha').innerText = "Rp " + (labaBersih * (pctUsaha / 100)).toLocaleString();
+    
+    // KUNCI DIBUKA
+    sudahHitung = true;
+    
+    // Notifikasi Sukses Hitung
+    tampilkanModal("<b>Hitung Berhasil!</b><br>Laba bersih dan bagi hasil sudah muncul. Sekarang Abang bisa simpan atau kirim laporannya.");
 }
   
   function loadSettingPersen() {
@@ -256,24 +260,28 @@ updateTampilanModal();
 }
   
   function shareWA() {
-    let laba = document.getElementById('resLaba').innerText;
-    let pemodal = document.getElementById('resPemodal').innerText;
-    let pengelola = document.getElementById('resPengelola').innerText;
-    let usaha = document.getElementById('resUsaha').innerText;
-    let tgl = new Date().toLocaleDateString('id-ID', { day:'numeric', month:'long', year:'numeric' });
+    if (!sudahHitung) {
+        tampilkanModal("<b>Akses Ditolak!</b><br>Harap klik tombol 'Hitung Laba' terlebih dahulu agar data yang dikirim akurat.");
+    } else {
+        let laba = document.getElementById('resLaba').innerText;
+        let pemodal = document.getElementById('resPemodal').innerText;
+        let pengelola = document.getElementById('resPengelola').innerText;
+        let usaha = document.getElementById('resUsaha').innerText;
+        let tgl = new Date().toLocaleDateString('id-ID', { day:'numeric', month:'long', year:'numeric' });
 
-    let pesan = `*LAPORAN LABA UMKM* %0A` +
-                `Tanggal: ${tgl} %0A` +
-                `---------------------------- %0A` +
-                `*Laba Bersih:* ${laba} %0A%0A` +
-                `*Pembagian:* %0A` +
-                `- Pemodal: ${pemodal} %0A` +
-                `- Pengelola: ${pengelola} %0A` +
-                `- Dana Usaha: ${usaha} %0A` +
-                `---------------------------- %0A` +
-                `_Dikirim otomatis via Aplikasi UMKM_`;
+        let pesan = `*LAPORAN LABA UMKM* %0A` +
+                    `Tanggal: ${tgl} %0A` +
+                    `---------------------------- %0A` +
+                    `*Laba Bersih:* ${laba} %0A%0A` +
+                    `*Pembagian:* %0A` +
+                    `- Pemodal: ${pemodal} %0A` +
+                    `- Pengelola: ${pengelola} %0A` +
+                    `- Dana Usaha: ${usaha} %0A` +
+                    `---------------------------- %0A` +
+                    `_Dikirim otomatis via Aplikasi UMKM_`;
 
-    window.open(`https://wa.me/?text=${pesan}`, '_blank');
+        window.open(`https://wa.me/?text=${pesan}`, '_blank');
+    }
 }
 
 // Jangan lupa panggil fungsi ini di window.onload atau paling bawah script
@@ -305,67 +313,75 @@ function initClient() {
 
 // Fungsi Utama Simpan (Dipanggil saat tombol diklik)
 function simpanLaporanLaba() {
-    // A. DATA WAKTU
-    let tgl = new Date();
-    let namaBulan = tgl.toLocaleString('id-ID', { month: 'long', year: 'numeric' });
-    
-    // B. DATA BAGI HASIL (Dari Angka UI)
-    let laba = document.getElementById('resLaba').innerText.replace(/[^0-9]/g, '');
-    let bagiPemodal = document.getElementById('resPemodal').innerText.replace(/[^0-9]/g, '');
-    let bagiPengelola = document.getElementById('resPengelola').innerText.replace(/[^0-9]/g, '');
-    let bagiUsaha = document.getElementById('resUsaha').innerText.replace(/[^0-9]/g, '');
-
-    // C. DATA RINGKASAN & MODAL
-    let r_masuk = document.getElementById('ringkasanMasuk').innerText.replace(/[^0-9]/g, '');
-    let r_keluar = document.getElementById('ringkasanKeluar').innerText.replace(/[^0-9]/g, '');
-    let m_awal = document.getElementById('inputModalAwal').value || 0;
-    let m_kembali = document.getElementById('modalKembali').innerText.replace(/[^0-9]/g, '');
-    let m_sisa = document.getElementById('sisaModal').innerText.replace(/[^0-9]/g, '');
-
-    // D. BUNGKUS JADI SATU PAKET LENGKAP
-    let laporanLengkap = {
-        id: Date.now(),
-        bulan: namaBulan,
-        tanggalSimpan: tgl.toLocaleString('id-ID'),
-        totalLaba: parseInt(laba),
-        bagianPemodal: parseInt(bagiPemodal),
-        bagianPengelola: parseInt(bagiPengelola),
-        bagianUsaha: parseInt(bagiUsaha),
-        totalPemasukan: parseInt(r_masuk),
-        totalPengeluaran: parseInt(r_keluar),
-        modalAwal: parseInt(m_awal),
-        modalSudahKembali: parseInt(m_kembali),
-        modalSisa: parseInt(m_sisa)
-    };
-
-    // E. SIMPAN KE LOCALSTORAGE (HP) - Data Detail
-    let dbLaporan = JSON.parse(localStorage.getItem('db_laporan_laba')) || [];
-    dbLaporan.push(laporanLengkap);
-    localStorage.setItem('db_laporan_laba', JSON.stringify(dbLaporan));
-
-    // --- F. TAMBAHAN: UPDATE HISTORY BULANAN (MESIN BARU) ---
-    let historyLama = JSON.parse(localStorage.getItem('history_bulanan_cloud')) || [];
-    let indexData = historyLama.findIndex(item => item.bulan === namaBulan);
-    let ringkasanHistory = {
-        bulan: namaBulan,
-        masuk: parseInt(r_masuk),
-        keluar: parseInt(r_keluar),
-        laba: parseInt(laba),
-        update: tgl.toLocaleDateString('id-ID')
-    };
-    if (indexData !== -1) { historyLama[indexData] = ringkasanHistory; } 
-    else { historyLama.unshift(ringkasanHistory); }
-    localStorage.setItem('history_bulanan_cloud', JSON.stringify(historyLama));
-    // -------------------------------------------------------
-
-    // G. KIRIM KE GOOGLE DRIVE
-    if (!accessToken) {
-        tokenClient.requestAccessToken();
+    if (!sudahHitung) {
+        tampilkanModal(" <b>Belum Dihitung!</b><br>Laporan tidak bisa diarsipkan sebelum total laba muncul.");
     } else {
-        eksekusiSimpanKeDrive();
+        let tgl = new Date();
+        let namaBulan = tgl.toLocaleString('id-ID', { month: 'long', year: 'numeric' });
+        
+        let laba = document.getElementById('resLaba').innerText.replace(/[^0-9]/g, '');
+        let bagiPemodal = document.getElementById('resPemodal').innerText.replace(/[^0-9]/g, '');
+        let bagiPengelola = document.getElementById('resPengelola').innerText.replace(/[^0-9]/g, '');
+        let bagiUsaha = document.getElementById('resUsaha').innerText.replace(/[^0-9]/g, '');
+
+        let r_masuk = document.getElementById('ringkasanMasuk').innerText.replace(/[^0-9]/g, '');
+        let r_keluar = document.getElementById('ringkasanKeluar').innerText.replace(/[^0-9]/g, '');
+        let m_awal = document.getElementById('inputModalAwal').value || 0;
+        let m_kembali = document.getElementById('modalKembali').innerText.replace(/[^0-9]/g, '');
+        let m_sisa = document.getElementById('sisaModal').innerText.replace(/[^0-9]/g, '');
+
+        let laporanLengkap = {
+            id: Date.now(),
+            bulan: namaBulan,
+            tanggalSimpan: tgl.toLocaleString('id-ID'),
+            totalLaba: parseInt(laba),
+            bagianPemodal: parseInt(bagiPemodal),
+            bagianPengelola: parseInt(bagiPengelola),
+            bagianUsaha: parseInt(bagiUsaha),
+            totalPemasukan: parseInt(r_masuk),
+            totalPengeluaran: parseInt(r_keluar),
+            modalAwal: parseInt(m_awal),
+            modalSudahKembali: parseInt(m_kembali),
+            modalSisa: parseInt(m_sisa)
+        };
+
+        // Simpan LocalStorage
+        let dbLaporan = JSON.parse(localStorage.getItem('db_laporan_laba')) || [];
+        dbLaporan.push(laporanLengkap);
+        localStorage.setItem('db_laporan_laba', JSON.stringify(dbLaporan));
+
+        // Update History
+        let historyLama = JSON.parse(localStorage.getItem('history_bulanan_cloud')) || [];
+        let indexData = historyLama.findIndex(item => item.bulan === namaBulan);
+        let ringkasanHistory = {
+            bulan: namaBulan,
+            masuk: parseInt(r_masuk),
+            keluar: parseInt(r_keluar),
+            laba: parseInt(laba),
+            update: tgl.toLocaleDateString('id-ID')
+        };
+        if (indexData !== -1) { historyLama[indexData] = ringkasanHistory; } 
+        else { historyLama.unshift(ringkasanHistory); }
+        localStorage.setItem('history_bulanan_cloud', JSON.stringify(historyLama));
+
+        // Cloud Save
+        if (typeof accessToken !== 'undefined' && accessToken) {
+            eksekusiSimpanKeDrive();
+        }
+
+        // NOTIFIKASI AKHIR (Ganti Alert)
+        tampilkanModal(" <b>Mantap Bang!</b><br>Laporan bulan " + namaBulan + " sudah aman tersimpan di History & Cloud.");
     }
-    
-    alert("Laporan & History Berhasil Diarsipkan!");
+}
+  
+// 5. Fungsi Kontrol Modal
+function tampilkanModal(pesan) {
+    document.getElementById('isiNotif').innerHTML = pesan;
+    document.getElementById('modalNotif').style.display = "flex";
+}
+
+function tutupModal() {
+    document.getElementById('modalNotif').style.display = "none";
 }
 
 function eksekusiSimpanKeDrive() {
@@ -403,9 +419,3 @@ updateTampilanModal(); // Fungsi modal yang kemarin juga tetap dipanggil
 <script src="https://apis.google.com/js/api.js" async defer></script>
 </body>
 </html>
-
-
-
-
-
-
