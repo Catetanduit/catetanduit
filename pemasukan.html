@@ -39,34 +39,41 @@ body {
   .isi2-msk{font-weight: bold;}
   .nomin-msk{text-align: right; display: flex; align-items: center; gap: 10px;}
   .nomin-msk span {font-weight: bold; color: #2e7d32;}
-  .nomin-msk button {background: #ff4444; color: white; border: none; border-radius: 4px; padding: 2px 8px; cursor: pointer; font-size: 12px;}
+  .nomin-msk button {background: transparent; color: #ff0000; border: none; border-radius: 4px; padding: 2px 8px; cursor: pointer; font-size: 12px;}
   
   .nomin-msk button{display:none;}
-  /* Jendela pilihan hapus (awalnya sembunyi) */
 .pilihanhapus {
-    display: none; 
-    background: #fff5f5; 
-    padding: 15px; 
-    border-radius: 12px; 
-    border: 1px dashed #e74c3c;
+    max-width: 300px;
     margin: auto;
-    grid-template-columns: 1fr 1fr; 
-    gap: 10px;max-width: 500px;
-}
-
-/* Class pembantu untuk buka-tutup lewat JavaScript */
-.buka-jendela {
-    display: grid !important;
-}
-
-/* Mengatur agar tombol hapus di baris data muncul saat mode hapus aktif */
-.mode-hapus-aktif .nomin-msk button {
-    display: inline-block !important;
+    display: flex;
+    justify-content: space-between;
 }
 a.nav-item:hover {
     color: #ff5e00;
 }
+  #yakinhapus {
+    position: fixed;
+    border:0px solid;
+    top: 100px;
+    left: 0;
+    width: 100%;
+}
+  #yakinhapus span {
+    display: flex;
+    flex-direction: row;
+    width: 300px;
+    align-items: center;
+    justify-content: space-evenly;
+}
+  #yakinhapus button {
+    border: 1px solid;width: 90px;
+    padding: 5px 10px;
+    border-radius: 5px;
+    background: #00a1ff;
+    color: white;
+}
 </style>
+ <style id="mohatif"></style>
   </head>
   <body>
 <div class="container" style="padding-bottom: 80px;"> <h2 style="color: #27ae60; text-align: center; margin-bottom: 25px;">
@@ -98,9 +105,9 @@ a.nav-item:hover {
 
 
 </div>
-<div style="border:0px solid;position:fixed;bottom:70px;left:0;width:100%;">
-<div id="boxHapus" class="pilihanhapus">
-    <button onclick="hapusSemua()" style="background: white; color: #e74c3c; border: 1px solid #e74c3c; padding: 10px; border-radius: 8px; font-size: 0.8rem; font-weight: bold; cursor:pointer;">
+<div id="boxHapus" style="display:none;border:0px solid;position:fixed;bottom:70px;left:0;width:100%;">
+<div class="pilihanhapus">
+    <button onclick="ngapusmua()" style="background: white; color: #e74c3c; border: 1px solid #e74c3c; padding: 10px; border-radius: 8px; font-size: 0.8rem; font-weight: bold; cursor:pointer;">
         <i class="fa fa-trash-alt"></i> Hapus Semua
     </button>
     <button onclick="toggleTombolBaris()" style="background: #e74c3c; color: white; border: none; padding: 10px; border-radius: 8px; font-size: 0.8rem; font-weight: bold; cursor:pointer;">
@@ -108,6 +115,12 @@ a.nav-item:hover {
     </button>
 </div>
 </div>
+    <div id="yakinhapus" style="display:none;">
+      <div style="border: 1px solid #adadad;max-width: 300px;margin: auto;padding: 10px;background: #000000;border-radius: 5px;min-height: 100px;display: flex;flex-direction: column;justify-content: space-around;align-items: center;color:white;">
+      <span>Anda yakin untuk menghapus semua</span>
+    <span><button onclick="hapusSemua()">Ya</button><a href=""><button>Tidak</button></a></span>
+      </div>
+    </div>
 <div class="bottom-nav">
     <a href="index.html" class="nav-item">
         <i class="fa fa-home"></i>
@@ -298,12 +311,10 @@ function tampilkanData() {
 }
 
 function hapusBaris(index) {
-    if (confirm("Hapus catatan ini?")) {
         dataPemasukan.splice(index, 1);
         localStorage.setItem('database_pemasukan', JSON.stringify(dataPemasukan));
         tampilkanData();
         mulaiBackup(); // Update Drive juga
-    }
 }
 
 function hapusSemua() {
@@ -315,26 +326,23 @@ function hapusSemua() {
 }
 
 function bukaTutupHapus() {
-    const box = document.getElementById("boxHapus");
-    // Buka atau tutup jendela pilihan
-    box.classList.toggle("buka-jendela");
-    
-    // Jika jendela ditutup, otomatis matikan mode hapus di baris data juga
-    if (!box.classList.contains("buka-jendela")) {
-        document.body.classList.remove("mode-hapus-aktif");
+    const kotak = document.getElementById("boxHapus");
+    if (kotak.style.display === "none") {
+        kotak.style.display = "block"; // Buka     
+    } else {
+        kotak.style.display = "none"; // Tutup
     }
 }
 
 function toggleTombolBaris() {
-    // Menambah/menghapus class di BODY supaya tombol hapus di setiap baris (nomin-msk) muncul
-    document.body.classList.toggle("mode-hapus-aktif");
-    
-    const aktif = document.body.classList.contains("mode-hapus-aktif");
-    if(aktif) {
-        alert("Mode hapus terpilih aktif! Silakan klik ikon sampah di baris data.");
-    }
-}
 
+    document.getElementById("mohatif").innerHTML ='.nomin-msk button{display:block}';
+  boxHapus.style.display = 'none';
+}
+function ngapusmua() {
+  yakinhapus.style.display = 'block';
+  boxHapus.style.display = 'none';
+}
 
 function kirimKeBulanan() {
 
@@ -369,13 +377,3 @@ window.onload = function() { tampilkanData(); };
     </body>
 
   </html>
-
-
-
-
-
-
-
-
-
-
