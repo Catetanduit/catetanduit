@@ -373,29 +373,8 @@ function ngapusmua() {
 }
 
 function kirimKeBulanan() {
-
-    // Ambil nilai dari h3 (kita bersihkan teks 'Total: Rp' dan titik-titiknya)
-
-    let totalTeks = document.getElementById('totalSemua').innerText;
-
-    let angkaSaja = totalTeks.replace(/[^0-9]/g, ''); 
-
-    
-
-    // Ambil bulan & tahun saat ini untuk label
-
-    let d = new Date();
-
-    let namaBulan = d.toLocaleDateString('id-ID', { month: 'long', year: 'numeric' });
-
-    let tglLengkap = d.getDate() + "/" + namaBulan;
-
-
-
-    // Kirim ke halaman bulanan via URL
-
-    window.location.href = "https://catetanduit.github.io/catetanduit/pemasukan-bulanan.html?bulan=" + encodeURIComponent(tglLengkap) + "&total=" + angkaSaja;
-
+    // Langsung pindah ke halaman grafik
+    window.location.href = "pemasukan-bulanan.html";
 }
     
 window.onload = function() { tampilkanData(); };
@@ -405,6 +384,7 @@ window.onload = function() { tampilkanData(); };
     </body>
 
   </html>
+
 
 
 
