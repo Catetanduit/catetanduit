@@ -319,11 +319,11 @@ function simpanLaporanLaba() {
         let tgl = new Date();
         let namaBulan = tgl.toLocaleString('id-ID', { month: 'long', year: 'numeric' });
         
+        // Ambil data dari UI
         let laba = document.getElementById('resLaba').innerText.replace(/[^0-9]/g, '');
         let bagiPemodal = document.getElementById('resPemodal').innerText.replace(/[^0-9]/g, '');
         let bagiPengelola = document.getElementById('resPengelola').innerText.replace(/[^0-9]/g, '');
         let bagiUsaha = document.getElementById('resUsaha').innerText.replace(/[^0-9]/g, '');
-
         let r_masuk = document.getElementById('ringkasanMasuk').innerText.replace(/[^0-9]/g, '');
         let r_keluar = document.getElementById('ringkasanKeluar').innerText.replace(/[^0-9]/g, '');
         let m_awal = document.getElementById('inputModalAwal').value || 0;
@@ -345,12 +345,19 @@ function simpanLaporanLaba() {
             modalSisa: parseInt(m_sisa)
         };
 
-        // Simpan LocalStorage
+        // --- UPDATE LOCALSTORAGE (ANTI NUMPUK) ---
         let dbLaporan = JSON.parse(localStorage.getItem('db_laporan_laba')) || [];
-        dbLaporan.push(laporanLengkap);
+        // Cek apakah bulan ini sudah pernah disimpan?
+        let indexBulanIni = dbLaporan.findIndex(item => item.bulan === namaBulan);
+        
+        if (indexBulanIni !== -1) {
+            dbLaporan[indexBulanIni] = laporanLengkap; // Timpa data lama bulan ini
+        } else {
+            dbLaporan.push(laporanLengkap); // Tambah baru kalau ganti bulan
+        }
         localStorage.setItem('db_laporan_laba', JSON.stringify(dbLaporan));
 
-        // Update History
+        // Update Ringkasan History Cloud (LocalStorage)
         let historyLama = JSON.parse(localStorage.getItem('history_bulanan_cloud')) || [];
         let indexData = historyLama.findIndex(item => item.bulan === namaBulan);
         let ringkasanHistory = {
@@ -364,18 +371,14 @@ function simpanLaporanLaba() {
         else { historyLama.unshift(ringkasanHistory); }
         localStorage.setItem('history_bulanan_cloud', JSON.stringify(historyLama));
 
-        // Cloud Save
+        // --- CLOUD SAVE ---
         if (!accessToken) {
-            // Jika belum ada token, minta login dulu
-            // callback-nya nanti otomatis jalankan eksekusiSimpanKeDrive()
             tokenClient.requestAccessToken();
         } else {
-            // Jika sudah ada token, langsung sikat simpan
             eksekusiSimpanKeDrive();
         }
 
-        // NOTIFIKASI AKHIR
-        tampilkanModal("<b>Mantap Bang!</b><br>Laporan bulan " + namaBulan + " sudah aman tersimpan di HP & Cloud.");
+        tampilkanModal("<b>Mantap Bang!</b><br>Arsip bulan " + namaBulan + " sudah diperbarui.");
     }
 }
   
@@ -389,38 +392,51 @@ function tutupModal() {
     document.getElementById('modalNotif').style.display = "none";
 }
 
-function eksekusiSimpanKeDrive() {
+async function eksekusiSimpanKeDrive() {
     let dbLaporan = JSON.parse(localStorage.getItem('db_laporan_laba')) || [];
-    if (dbLaporan.length === 0) return; // Jaga-jaga kalau data kosong
+    if (dbLaporan.length === 0) return;
 
-    let dataTerakhir = dbLaporan[dbLaporan.length - 1];
+    // Ambil data terakhir yang baru saja kita simpan/update di LocalStorage
+    let tgl = new Date();
+    let namaBulan = tgl.toLocaleString('id-ID', { month: 'long', year: 'numeric' });
+    let dataTerakhir = dbLaporan.find(item => item.bulan === namaBulan);
+    
+    let namaFile = 'Laporan_Lengkap_' + namaBulan.replace(/\s/g, '_') + '.json';
 
-    const metadata = {
-        'name': 'Laporan_Lengkap_' + dataTerakhir.bulan.replace(/\s/g, '_') + '.json',
-        'mimeType': 'application/json'
-    };
+    try {
+        // 1. Cari apakah file bulan ini sudah ada di Drive
+        const cari = await fetch(`https://www.googleapis.com/drive/v3/files?q=name='${namaFile}' and trashed=false`, {
+            headers: { 'Authorization': 'Bearer ' + accessToken }
+        });
+        const hasilCari = await cari.json();
 
-    const file = new Blob([JSON.stringify(dataTerakhir, null, 2)], {type: 'application/json'});
-    const formData = new FormData();
-    formData.append('metadata', new Blob([JSON.stringify(metadata)], {type: 'application/json'}));
-    formData.append('file', file);
+        if (hasilCari.files && hasilCari.files.length > 0) {
+            // 2. JIKA ADA: Timpa isinya (Update)
+            let fileId = hasilCari.files[0].id;
+            await fetch(`https://www.googleapis.com/upload/drive/v3/files/${fileId}?uploadType=media`, {
+                method: 'PATCH',
+                headers: { 'Authorization': 'Bearer ' + accessToken, 'Content-Type': 'application/json' },
+                body: JSON.stringify(dataTerakhir)
+            });
+            console.log("Berhasil Update Arsip Cloud: " + namaFile);
+        } else {
+            // 3. JIKA BELUM ADA: Bikin baru (POST)
+            const metadata = { 'name': namaFile, 'mimeType': 'application/json' };
+            const formData = new FormData();
+            formData.append('metadata', new Blob([JSON.stringify(metadata)], {type: 'application/json'}));
+            formData.append('file', new Blob([JSON.stringify(dataTerakhir)], {type: 'application/json'}));
 
-    fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
-        method: 'POST',
-        headers: new Headers({'Authorization': 'Bearer ' + accessToken}),
-        body: formData
-    }).then(res => {
-        if (!res.ok) throw new Error('Gagal Upload');
-        return res.json();
-    }).then(val => {
-        console.log("Berhasil simpan ke Drive:", val.name);
-        // Kita kasih tanda kecil di UI kalau berhasil (opsional)
-        const statusEl = document.getElementById('statusSimpan');
-        if(statusEl) statusEl.style.display = "block";
-    }).catch(err => {
-        console.error(err);
-        tampilkanModal("<b>Gagal Cloud!</b><br>Data tersimpan di HP, tapi gagal kirim ke Drive. Cek koneksi ya Bang.");
-    });
+            await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
+                method: 'POST',
+                headers: { 'Authorization': 'Bearer ' + accessToken },
+                body: formData
+            });
+            console.log("Berhasil Buat Arsip Cloud Baru: " + namaFile);
+        }
+    } catch (err) {
+        console.error("Gagal Cloud:", err);
+        tampilkanModal("<b>Gagal Cloud!</b><br>Cek koneksi, tapi data di HP sudah aman kok.");
+    }
 }
    
 // Panggil fungsi load ini di paling bawah script atau di window.onload
@@ -431,4 +447,5 @@ updateTampilanModal(); // Fungsi modal yang kemarin juga tetap dipanggil
 <script src="https://apis.google.com/js/api.js" async defer></script>
 </body>
 </html>
+
 
