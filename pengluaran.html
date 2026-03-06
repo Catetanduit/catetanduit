@@ -77,7 +77,7 @@
   <script>
     let dbPengeluaran = JSON.parse(localStorage.getItem('db_keluar')) || [];
 
-// --- SETTING GOOGLE DRIVE ---
+// --- SETTING GOOGLE DRIVE (SISTEM BUKU BULANAN) ---
 const CLIENT_ID = '561366474384-9hf22uio84jrj7adafut9r2h15c2ninf.apps.googleusercontent.com';
 const SCOPES = 'https://www.googleapis.com/auth/drive.file';
 let tokenClient;
@@ -90,33 +90,6 @@ function initClient() {
     });
 }
 
-function tambahPengeluaran() {
-    let ket = document.getElementById('ketKeluar').value;
-    let nom = parseInt(document.getElementById('nomKeluar').value);
-    let isModal = document.getElementById('isModal').checked;
-    let tgl = new Date().toLocaleDateString('id-ID');
-
-    if (ket && nom) {
-        let dataBaru = {
-            key: Date.now(),
-            tanggal: tgl,
-            keterangan: isModal ? "REKAP MODAL: " + ket : ket,
-            jumlah: nom,
-            tipe: isModal ? "modal" : "biasa"
-        };
-
-        dbPengeluaran.unshift(dataBaru);
-        localStorage.setItem('db_keluar', JSON.stringify(dbPengeluaran));
-        
-        document.getElementById('ketKeluar').value = "";
-        document.getElementById('nomKeluar').value = "";
-        tampilkanKeluar();
-        
-        // OTOMATIS BACKUP
-        mulaiBackup();
-    }
-}
-
 function mulaiBackup() {
     if (!accessToken) {
         tokenClient.requestAccessToken();
@@ -126,29 +99,55 @@ function mulaiBackup() {
 }
 
 async function uploadKeDrive() {
-    let tgl = new Date().toLocaleDateString('id-ID').replace(/\//g, '-');
-    let dataPemasukan = JSON.parse(localStorage.getItem('database_pemasukan')) || [];
+    let tgl = new Date();
+    let namaBulan = tgl.toLocaleString('id-ID', { month: 'long', year: 'numeric' }).replace(/\s/g, '_');
+    let namaFile = 'Daily_Log_' + namaBulan + '.json';
 
+    let dataMasuk = JSON.parse(localStorage.getItem('database_pemasukan')) || [];
     let paketHarian = {
         id: Date.now(),
-        tanggal: new Date().toLocaleDateString('id-ID'),
-        pemasukan: dataPemasukan,
-        pengeluaran: dbPengeluaran,
-        totalIn: dataPemasukan.reduce((s, i) => s + i.jumlah, 0),
-        totalOut: dbPengeluaran.reduce((s, i) => s + i.jumlah, 0)
+        tanggal: tgl.toLocaleDateString('id-ID'),
+        pemasukan: dataMasuk,
+        pengeluaran: JSON.parse(localStorage.getItem('db_keluar')) || [],
+        totalIn: dataMasuk.reduce((s, i) => s + i.jumlah, 0),
+        totalOut: (JSON.parse(localStorage.getItem('db_keluar')) || []).reduce((s, i) => s + i.jumlah, 0)
     };
 
-    const metadata = { 'name': 'Daily_Log_' + tgl + '.json', 'mimeType': 'application/json' };
-    const file = new Blob([JSON.stringify(paketHarian)], {type: 'application/json'});
-    const formData = new FormData();
-    formData.append('metadata', new Blob([JSON.stringify(metadata)], {type: 'application/json'}));
-    formData.append('file', file);
+    try {
+        const cari = await fetch(`https://www.googleapis.com/drive/v3/files?q=name='${namaFile}' and trashed=false`, {
+            headers: { 'Authorization': 'Bearer ' + accessToken }
+        });
+        const hasilCari = await cari.json();
 
-    fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
-        method: 'POST',
-        headers: new Headers({'Authorization': 'Bearer ' + accessToken}),
-        body: formData
-    }).then(() => console.log("Backup Pengeluaran Berhasil!"));
+        if (hasilCari.files && hasilCari.files.length > 0) {
+            let fileId = hasilCari.files[0].id;
+            const download = await fetch(`https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`, {
+                headers: { 'Authorization': 'Bearer ' + accessToken }
+            });
+            let isiLama = await download.json();
+            if (!Array.isArray(isiLama)) isiLama = [isiLama];
+
+            let idx = isiLama.findIndex(item => item.tanggal === paketHarian.tanggal);
+            if (idx !== -1) { isiLama[idx] = paketHarian; } else { isiLama.unshift(paketHarian); }
+
+            await fetch(`https://www.googleapis.com/upload/drive/v3/files/${fileId}?uploadType=media`, {
+                method: 'PATCH',
+                headers: { 'Authorization': 'Bearer ' + accessToken, 'Content-Type': 'application/json' },
+                body: JSON.stringify(isiLama)
+            });
+        } else {
+            const metadata = { 'name': namaFile, 'mimeType': 'application/json' };
+            const formData = new FormData();
+            formData.append('metadata', new Blob([JSON.stringify(metadata)], {type: 'application/json'}));
+            formData.append('file', new Blob([JSON.stringify([paketHarian])], {type: 'application/json'}));
+            await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
+                method: 'POST',
+                headers: { 'Authorization': 'Bearer ' + accessToken },
+                body: formData
+            });
+        }
+        console.log("Cloud Sinkron: " + namaFile);
+    } catch (err) { console.error("Gagal Sinkron:", err); }
 }
 
 function tampilkanKeluar() {
@@ -176,6 +175,7 @@ window.onload = function() { tampilkanKeluar(); };
   </body>
 
 </html>
+
 
 
 
