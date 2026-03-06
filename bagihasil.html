@@ -365,12 +365,17 @@ function simpanLaporanLaba() {
         localStorage.setItem('history_bulanan_cloud', JSON.stringify(historyLama));
 
         // Cloud Save
-        if (typeof accessToken !== 'undefined' && accessToken) {
+        if (!accessToken) {
+            // Jika belum ada token, minta login dulu
+            // callback-nya nanti otomatis jalankan eksekusiSimpanKeDrive()
+            tokenClient.requestAccessToken();
+        } else {
+            // Jika sudah ada token, langsung sikat simpan
             eksekusiSimpanKeDrive();
         }
 
-        // NOTIFIKASI AKHIR (Ganti Alert)
-        tampilkanModal(" <b>Mantap Bang!</b><br>Laporan bulan " + namaBulan + " sudah aman tersimpan di History & Cloud.");
+        // NOTIFIKASI AKHIR
+        tampilkanModal("<b>Mantap Bang!</b><br>Laporan bulan " + namaBulan + " sudah aman tersimpan di HP & Cloud.");
     }
 }
   
@@ -386,11 +391,12 @@ function tutupModal() {
 
 function eksekusiSimpanKeDrive() {
     let dbLaporan = JSON.parse(localStorage.getItem('db_laporan_laba')) || [];
+    if (dbLaporan.length === 0) return; // Jaga-jaga kalau data kosong
+
     let dataTerakhir = dbLaporan[dbLaporan.length - 1];
 
-    // Nama file sekarang lebih keren: Laporan_Lengkap_Maret_2026.json
     const metadata = {
-        'name': 'Laporan_Lengkap_' + dataTerakhir.bulan.replace(' ', '_') + '.json',
+        'name': 'Laporan_Lengkap_' + dataTerakhir.bulan.replace(/\s/g, '_') + '.json',
         'mimeType': 'application/json'
     };
 
@@ -403,11 +409,17 @@ function eksekusiSimpanKeDrive() {
         method: 'POST',
         headers: new Headers({'Authorization': 'Bearer ' + accessToken}),
         body: formData
-    }).then(res => res.json()).then(val => {
-        alert("Sip! Laporan Lengkap Bulan " + dataTerakhir.bulan + " sudah aman di Drive.");
-        document.getElementById('statusSimpan').style.display = "block";
+    }).then(res => {
+        if (!res.ok) throw new Error('Gagal Upload');
+        return res.json();
+    }).then(val => {
+        console.log("Berhasil simpan ke Drive:", val.name);
+        // Kita kasih tanda kecil di UI kalau berhasil (opsional)
+        const statusEl = document.getElementById('statusSimpan');
+        if(statusEl) statusEl.style.display = "block";
     }).catch(err => {
-        alert("Waduh, gagal kirim data lengkap ke Drive.");
+        console.error(err);
+        tampilkanModal("<b>Gagal Cloud!</b><br>Data tersimpan di HP, tapi gagal kirim ke Drive. Cek koneksi ya Bang.");
     });
 }
    
@@ -419,3 +431,4 @@ updateTampilanModal(); // Fungsi modal yang kemarin juga tetap dipanggil
 <script src="https://apis.google.com/js/api.js" async defer></script>
 </body>
 </html>
+
