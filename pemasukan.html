@@ -252,38 +252,6 @@ async function uploadKeDrive() {
     } catch (err) { console.error("Gagal Sinkron:", err); }
 }
 
-async function uploadKeDrive() {
-    let tgl = new Date().toLocaleDateString('id-ID').replace(/\//g, '-');
-    let dataKeluar = JSON.parse(localStorage.getItem('db_keluar')) || []; // Ambil juga data pengeluaran biar sinkron
-
-    let paketHarian = {
-        id: Date.now(),
-        tanggal: new Date().toLocaleDateString('id-ID'),
-        pemasukan: dataPemasukan,
-        pengeluaran: dataKeluar,
-        totalIn: dataPemasukan.reduce((s, i) => s + i.jumlah, 0),
-        totalOut: dataKeluar.reduce((s, i) => s + i.jumlah, 0)
-    };
-
-    const metadata = {
-        'name': 'Daily_Log_' + tgl + '.json',
-        'mimeType': 'application/json'
-    };
-
-    const file = new Blob([JSON.stringify(paketHarian)], {type: 'application/json'});
-    const formData = new FormData();
-    formData.append('metadata', new Blob([JSON.stringify(metadata)], {type: 'application/json'}));
-    formData.append('file', file);
-
-    fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
-        method: 'POST',
-        headers: new Headers({'Authorization': 'Bearer ' + accessToken}),
-        body: formData
-    }).then(() => {
-        console.log("Backup Pemasukan Berhasil!");
-    });
-}
-
 // 1. Fungsi Buka-Tutup Manual (Klik Tombol Plus)
 function bukaTutupTambah() {
     let x = document.getElementById("tambahin");
@@ -416,4 +384,5 @@ window.onload = function() { tampilkanData(); };
     </body>
 
   </html>
+
 
