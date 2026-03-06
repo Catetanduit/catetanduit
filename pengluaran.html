@@ -150,6 +150,57 @@ async function uploadKeDrive() {
     } catch (err) { console.error("Gagal Sinkron:", err); }
 }
 
+function tambahPengeluaran() {
+
+    let ket = document.getElementById('ketKeluar').value;
+
+    let nom = parseInt(document.getElementById('nomKeluar').value);
+
+    let isModal = document.getElementById('isModal').checked;
+
+    let tgl = new Date().toLocaleDateString('id-ID');
+
+
+
+    if (ket && nom) {
+
+        let dataBaru = {
+
+            key: Date.now(),
+
+            tanggal: tgl,
+
+            keterangan: isModal ? "REKAP MODAL: " + ket : ket,
+
+            jumlah: nom,
+
+            tipe: isModal ? "modal" : "biasa"
+
+        };
+
+
+
+        dbPengeluaran.unshift(dataBaru);
+
+        localStorage.setItem('db_keluar', JSON.stringify(dbPengeluaran));
+
+        
+
+        document.getElementById('ketKeluar').value = "";
+
+        document.getElementById('nomKeluar').value = "";
+
+        tampilkanKeluar();
+
+        
+
+        // OTOMATIS BACKUP
+
+        mulaiBackup();
+
+    }
+
+}      
 function tampilkanKeluar() {
     let html = "";
     let total = 0;
@@ -175,6 +226,7 @@ window.onload = function() { tampilkanKeluar(); };
   </body>
 
 </html>
+
 
 
 
