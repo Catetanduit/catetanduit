@@ -251,7 +251,28 @@ async function uploadKeDrive() {
         console.log("Cloud Sinkron: " + namaFile);
     } catch (err) { console.error("Gagal Sinkron:", err); }
 }
+// --- FUNGSI SIMPAN DATA KE LOCALSTORAGE (YANG TADI ILANG) ---
+function simpanData(ket, nominal) {
+    let tgl = new Date().toLocaleDateString('id-ID'); 
+    let angkaBersih = nominal.toString().replace(/\./g, "");
+    
+    // Masukkan ke array dataPemasukan
+    dataPemasukan.unshift({
+        tanggal: tgl,
+        keterangan: ket,
+        jumlah: parseInt(angkaBersih)
+    });
 
+    // Simpan ke HP (LocalStorage)
+    localStorage.setItem('database_pemasukan', JSON.stringify(dataPemasukan));
+    
+    // Update tampilan tabel di layar
+    tampilkanData();
+    
+    // LANGSUNG TERBANG KE DRIVE (BACKUP)
+    mulaiBackup();
+}
+    
 // 1. Fungsi Buka-Tutup Manual (Klik Tombol Plus)
 function bukaTutupTambah() {
     let x = document.getElementById("tambahin");
@@ -384,5 +405,6 @@ window.onload = function() { tampilkanData(); };
     </body>
 
   </html>
+
 
 
