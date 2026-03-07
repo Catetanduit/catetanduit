@@ -267,7 +267,6 @@ function bukaTutupTambah() {
     let x = document.getElementById("tambahin");
     if (x.style.display === "none") {
         x.style.display = "block";
-        document.getElementById('mNama').focus(); // Otomatis kursor di input nama
     } else {
         x.style.display = "none";
         // Bersihkan peringatan kalau form ditutup manual
@@ -302,3 +301,4 @@ window.onload = function() { tampilkanKeluar(); };
 <script src="https://apis.google.com/js/api.js" async defer></script>
   </body>
 </html>
+
