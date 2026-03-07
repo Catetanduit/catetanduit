@@ -264,13 +264,11 @@ function hapusKeluar(key) {
     mulaiBackup();
 }
 function bukaTutupTambah() {
-    let x = document.getElementById("tambahin");
+    const x = document.getElementById("tambahin");
     if (x.style.display === "none") {
         x.style.display = "block";
     } else {
         x.style.display = "none";
-        // Bersihkan peringatan kalau form ditutup manual
-        document.getElementById("peringatan").style.display = "none";
     }
 }
 function bukaTutupHapus() {
@@ -301,4 +299,5 @@ window.onload = function() { tampilkanKeluar(); };
 <script src="https://apis.google.com/js/api.js" async defer></script>
   </body>
 </html>
+
 
