@@ -263,15 +263,31 @@ window.addEventListener('load', () => {
     initClient();
     
     // Cek apakah sudah pernah login sebelumnya
+    // 3. CEK INGATAN (Apakah user sudah pernah login?)
     const userLama = JSON.parse(localStorage.getItem('user_aktif'));
+
     if (userLama) {
-        document.getElementById('tokoku').innerHTML = "Halo, " + userLama.nama;
+        // Kalau ada datanya, langsung buka pintu tanpa nanya lagi
+        document.getElementById('layarLogin').style.display = "none";
+        document.getElementById('menuUtama').style.display = "block";
+        
+        // Pasang nama dan emailnya
+        document.getElementById('sapaanUser').innerText = "Halo, " + userLama.nama + "!";
+        document.getElementById('emailUser').innerText = userLama.email;
+        
+        // Update angka-angka dashboard
+        updateRingkasanDashboard();
+    } else {
+        // Kalau belum ada data, tetap di layar login
+        document.getElementById('layarLogin').style.display = "block";
+        document.getElementById('menuUtama').style.display = "none";
     }
 });
     </script>
 </body>
 
 </html>
+
 
 
 
