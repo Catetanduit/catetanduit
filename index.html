@@ -100,6 +100,9 @@ i.fa.fa-trash {
   <header style="background:#00a2e9;padding: 10px;padding-top: 0;">
       <span id="sapaanUser"></span>
     <div id="emailUser"></div>
+      <button onclick="logout()" style="margin-top: 10px; background: #e74c3c; color: white; border: none; padding: 5px 15px; border-radius: 5px; cursor: pointer; font-size: 12px;position:fixed;right:10px;top:5px;">
+    <i class="fa fa-sign-out-alt"></i> Keluar / Ganti Akun
+</button>
   <h2 id="tokoku" style="margin: 0;padding: 5px;">Catetanduit</h2>
 <div id="para1"></div>
 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
@@ -285,10 +288,21 @@ window.addEventListener('load', () => {
         document.getElementById('menuUtama').style.display = "none";
     }
 });
+      function logout() {
+    // 1. Hapus data user dari memori HP
+    localStorage.removeItem('user_aktif');
+    
+    // 2. Kosongkan variabel akses token (biar bersih total)
+    accessToken = null;
+
+    // 3. Refresh halaman biar balik ke layar login
+    location.reload();
+}
     </script>
 </body>
 
 </html>
+
 
 
 
