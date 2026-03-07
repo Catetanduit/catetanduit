@@ -96,7 +96,7 @@ i.fa.fa-trash {
     </button>
 </div>
 
-<div id="menuUtama" style="display: none; padding: 20px;">    
+<div id="menuUtama" style="display: none;">    
   <header style="background:#00a2e9;padding: 10px;padding-top: 0;">
   <h2 id="tokoku" style="margin: 0;padding: 5px;">Catetanduit</h2>
 <div id="para1"></div>
@@ -272,7 +272,7 @@ window.addEventListener('load', () => {
         document.getElementById('menuUtama').style.display = "block";
         
         // Pasang nama dan emailnya
-        document.getElementById('sapaanUser').innerText = "Halo, " + userLama.nama + "!";
+        document.getElementById('sapaanUser').innerText = "Halo, " + userLama.name + "!";
         document.getElementById('emailUser').innerText = userLama.email;
         
         // Update angka-angka dashboard
@@ -287,6 +287,7 @@ window.addEventListener('load', () => {
 </body>
 
 </html>
+
 
 
 
