@@ -118,14 +118,30 @@ window.onload = function() {
 };
 
 async function tarikDataCloud() {
+    // 1. CEK: Apakah kita sudah punya akses (Token)?
+    if (!accessToken) {
+        // Kalau belum ada kunci, panggil Google buat minta izin
+        console.log("Minta token baru...");
+        tokenClient.requestAccessToken();
+        return; // Berhenti dulu, nanti lanjut lagi otomatis lewat callback initClient
+    }
+
     const wadah = document.getElementById('namast');
     wadah.innerHTML = "<div style='text-align:center; padding:20px;'><i class='fa fa-sync fa-spin'></i> Menyelaraskan data HP & Komputer...</div>";
 
     try {
-        // Cari semua file Laporan Lengkap di Drive
+        // 2. JALANKAN PROSES TARIK DATA
         const response = await fetch(`https://www.googleapis.com/drive/v3/files?q=name contains 'Laporan_Lengkap_' and trashed=false&fields=files(id, name)`, {
             headers: { 'Authorization': 'Bearer ' + accessToken }
         });
+
+        // Jika ternyata tokennya basi (Expired), hapus dan minta lagi
+        if (response.status === 401) {
+            accessToken = null;
+            tokenClient.requestAccessToken();
+            return;
+        }
+
         const resData = await response.json();
         const files = resData.files;
 
@@ -138,28 +154,24 @@ async function tarikDataCloud() {
                 });
                 const isi = await fileRes.json();
                 
-                // Masukkan ke array untuk list & grafik
                 dataHasilCloud.push({
-                    key: isi.id,
-                    bulan: isi.bulan, // Format: "Maret 2026"
+                    key: isi.id || Date.now(),
+                    bulan: isi.bulan, 
                     total: isi.totalPemasukan
                 });
             }
 
-            // Urutkan data berdasarkan waktu (id) agar grafik urut bulan
+            // Urutkan data berdasarkan waktu agar grafik rapi
             dataHasilCloud.sort((a, b) => a.key - b.key);
             dbBulanan = dataHasilCloud;
             
-            // Simpan ke LocalStorage sebagai backup (Opsional)
-            localStorage.setItem('db_bulanan_umkm', JSON.stringify(dbBulanan));
-
             tampilkanSemua();
         } else {
-            wadah.innerHTML = "<p style='text-align:center;'>Belum ada laporan di Drive.</p>";
+            wadah.innerHTML = "<p style='text-align:center; padding:20px; color:#999;'>Belum ada laporan di Drive.</p>";
         }
     } catch (err) {
         console.error(err);
-        wadah.innerHTML = "<p style='text-align:center; color:red;'>Gagal sinkron data cloud.</p>";
+        wadah.innerHTML = "<p style='text-align:center; color:red; padding:20px;'>Gagal memuat data Cloud.</p>";
     }
 }
 
@@ -213,6 +225,7 @@ function bikinGrafik(labels, values) {
 </body>
 
 </html>
+
 
 
 
