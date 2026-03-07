@@ -17,14 +17,43 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/finansial148/editorgue@main/style-pusat.css">
     <title>Pengluaran Harian</title>
   <style>
-
+    .pilihanhapus {
+    max-width: 300px;
+    margin: auto;
+    display: flex;
+    justify-content: space-between;
+}
+    #yakinhapus {
+    position: fixed;
+    border: 0px solid;
+    top: 100px;
+    left: 0;
+    width: 100%;
+}
+    #yakinhapus span {
+    display: flex;
+    flex-direction: row;
+    width: 300px;
+    align-items: center;
+    justify-content: space-evenly;
+}
+    #yakinhapus button {
+    border: 1px solid;
+    width: 90px;
+    padding: 5px 10px;
+    border-radius: 5px;
+    background: #00a1ff;
+    color: white;
+}
+span i.fa.fa-trash{display:none}
   </style>
+<style id="mohatif"></style>  
   </head>
   <body>
     
       <div class="container">
     <h2 class="judul" style="color: #d32f2f;"><i class="fa fa-shopping-cart"></i> Pengeluaran Harian</h2>
-
+<div id="tambahin" style="display:none; background:#b8b9b978; padding: 15px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); margin-bottom: 25px;">
     <div class="card-data" style="display: block; border-left: 5px solid #d32f2f;">
         <input type="text" id="ketKeluar" placeholder="Beli apa hari ini?" style="width: 100%; padding: 10px; margin-bottom: 10px; border-radius: 8px; border: 1px solid #ddd;">
         <input type="number" id="nomKeluar" placeholder="Jumlah Rp" style="width: 100%; padding: 10px; margin-bottom: 10px; border-radius: 8px; border: 1px solid #ddd;">
@@ -37,13 +66,13 @@
             Simpan Pengeluaran
         </button>
     </div>
-
+</div>
     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 20px;">
         <div class="card-data" style="flex-direction: column; align-items: flex-start;">
             <span class="text-tgl">Total Keluar</span>
             <span class="text-harga" id="totalKeluar">Rp 0</span>
         </div>
-        <div class="card-data" style="flex-direction: column; align-items: flex-start; border-left-color: #f39c12;">
+        <div class="card-data" style="display: none;flex-direction: column; align-items: flex-start; border-left-color: #f39c12;">
             <span class="text-tgl">Balik Modal</span>
             <span class="text-harga" id="totalBalikModal">Rp 0</span>
         </div>
@@ -52,27 +81,43 @@
     <ul id="listKeluar" style="list-style: none; padding: 0; margin-top: 20px;">
         </ul>
 </div>
-    <div class="bottom-nav">
+<div id="boxHapus" style="display:none;border:0px solid;position:fixed;bottom:70px;left:0;width:100%;">
+<div class="pilihanhapus">
+    <button onclick="ngapusmua()" style="background: white; color: #e74c3c; border: 1px solid #e74c3c; padding: 10px; border-radius: 8px; font-size: 0.8rem; font-weight: bold; cursor:pointer;">
+        <i class="fa fa-trash-alt"></i> Hapus Semua
+    </button>
+    <button onclick="toggleTombolBaris()" style="background: #e74c3c; color: white; border: none; padding: 10px; border-radius: 8px; font-size: 0.8rem; font-weight: bold; cursor:pointer;">
+        <i class="fa fa-check-square"></i> Pilih Baris
+    </button>
+</div>
+</div>
+    <div id="yakinhapus" style="display:none;">
+      <div style="border: 1px solid #adadad;max-width: 300px;margin: auto;padding: 10px;background: #000000;border-radius: 5px;min-height: 100px;display: flex;flex-direction: column;justify-content: space-around;align-items: center;color:white;">
+      <span>Anda yakin untuk menghapus semua</span>
+    <span><a href=""><button onclick="hapusSemua()">Ya</button></a><a href=""><button>Tidak</button></a></span>
+      </div>
+    </div>
+<div class="bottom-nav">
     <a href="index.html" class="nav-item">
         <i class="fa fa-home"></i>
         <span>Home</span>
     </a>
-    <a href="pemasukan.html" class="nav-item">
-        <i class="fas fa-hand-holding-usd"></i>
-        <span>Masukan</span>
-    </a>
-    <a href="pengluaran.html" class="nav-item active">
+    <a onclick="bukaTutupHapus()" class="nav-item" style="cursor:pointer;">
+    <i class="fa fa-trash"></i>
+    <span>Hapus</span>
+</a>
+    <a href="pengeluaran.html" class="nav-item">
         <i class="fas fa-shopping-cart"></i>
         <span>Keluaran</span>
-    </a>
-    <a href="bagihasil.html" class="nav-item">
-        <i class="fas fa-chart-pie"></i>
-        <span>Laba</span>
     </a>
     <a href="arsip.html" class="nav-item">
         <i class="fa fa-archive"></i>
         <span>Arsip</span>
     </a>
+  <a onclick="bukaTutupTambah()" class="nav-item" style="cursor:pointer;">
+    <i class="fa fa-plus"></i>
+    <span>Tambah</span>
+</a>
 </div>
   <script>
     let dbPengeluaran = JSON.parse(localStorage.getItem('db_keluar')) || [];
@@ -218,17 +263,42 @@ function hapusKeluar(key) {
     tampilkanKeluar();
     mulaiBackup();
 }
+function bukaTutupTambah() {
+    let x = document.getElementById("tambahin");
+    if (x.style.display === "none") {
+        x.style.display = "block";
+        document.getElementById('mNama').focus(); // Otomatis kursor di input nama
+    } else {
+        x.style.display = "none";
+        // Bersihkan peringatan kalau form ditutup manual
+        document.getElementById("peringatan").style.display = "none";
+    }
+}
+function bukaTutupHapus() {
+    const kotak = document.getElementById("boxHapus");
+    if (kotak.style.display === "none") {
+        kotak.style.display = "block"; // Buka     
+    } else {
+        kotak.style.display = "none"; // Tutup
+    }
+}
+function ngapusmua() {
+  yakinhapus.style.display = 'block';
+  boxHapus.style.display = 'none';
+}
+function toggleTombolBaris() {
 
+    document.getElementById("mohatif").innerHTML ='span i.fa.fa-trash{display:block}';
+  boxHapus.style.display = 'none';
+}
+function hapusSemua() {
+        localStorage.removeItem('db_keluar');
+        tampilkanKeluar();
+}    
+// Jalankan saat halaman dibuka
 window.onload = function() { tampilkanKeluar(); }; 
   </script>
-      <script src="https://accounts.google.com/gsi/client" onload="initClient()" async defer></script>
+    <script src="https://accounts.google.com/gsi/client" onload="initClient()" async defer></script>
 <script src="https://apis.google.com/js/api.js" async defer></script>
   </body>
-
 </html>
-
-
-
-
-
-
