@@ -183,10 +183,21 @@ function initClient() {
         client_id: CLIENT_ID,
         scope: SCOPES,
         callback: async (res) => {
-            accessToken = res.access_token;
-            await ambilProfilUser(); // Ambil siapa yang login
-            updateRingkasanDashboard(); // Update angka-angka
-        },
+    accessToken = res.access_token;
+    
+    // 1. Ambil Nama & Foto Profil
+    await ambilProfilUser(); 
+    
+    // 2. Tarik koper data dari Drive (PENTING!)
+    await restoreDataOtomatis(); 
+    
+    // 3. Setelah data beres ditarik, baru buka layarnya
+    if(document.getElementById('layarLogin')) document.getElementById('layarLogin').style.display = "none";
+    if(document.getElementById('menuUtama')) document.getElementById('menuUtama').style.display = "block";
+    
+    // 4. Update tampilan angka dashboard
+    updateRingkasanDashboard();
+},
     });
 }
 
@@ -398,6 +409,7 @@ window.addEventListener('load', () => {
 </body>
 
 </html>
+
 
 
 
