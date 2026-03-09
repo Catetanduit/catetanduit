@@ -100,7 +100,7 @@ i.fa.fa-trash {
   <header style="background:#00a2e9;padding: 10px;padding-top: 0;">
       <span id="sapaanUser"></span>
     <div id="emailUser"></div>
-      <button onclick="logout()" style="margin-top: 10px; background: #e74c3c; color: white; border: none; padding: 5px 15px; border-radius: 5px; cursor: pointer; font-size: 12px;position:absolute;right:10px;top:5px;">
+      <button onclick="backupDanLogout()" style="margin-top: 10px; background: #e74c3c; color: white; border: none; padding: 5px 15px; border-radius: 5px; cursor: pointer; font-size: 12px;position:absolute;right:10px;top:5px;">
     <i class="fa fa-sign-out-alt"></i> Keluar / Ganti Akun
 </button>
   <h2 id="tokoku" style="margin: 0;padding: 5px;">Catetanduit</h2>
@@ -211,6 +211,36 @@ async function ambilProfilUser() {
         console.error("Gagal ambil profil:", err);
     }
 }
+      async function restoreDataOtomatis() {
+    try {
+        const fileName = 'catetanduit_backup_total.json';
+        const searchRes = await fetch(`https://www.googleapis.com/drive/v3/files?q=name='${fileName}' and trashed=false`, {
+            headers: { 'Authorization': 'Bearer ' + accessToken }
+        });
+        const searchData = await searchRes.json();
+
+        if (searchData.files && searchData.files.length > 0) {
+            const fileId = searchData.files[0].id;
+            const contentRes = await fetch(`https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`, {
+                headers: { 'Authorization': 'Bearer ' + accessToken }
+            });
+            
+            const backupData = await contentRes.json();
+
+            // Bongkar isi koper dan masukkan kembali ke localStorage
+            Object.keys(backupData).forEach(key => {
+                localStorage.setItem(key, backupData[key]);
+            });
+
+            console.log("Data & Settingan berhasil dipulihkan!");
+            // Segarkan tampilan
+            if (typeof updateRingkasanDashboard === "function") updateRingkasanDashboard();
+            if (typeof NUsahaAku === "function") NUsahaAku();
+        }
+    } catch (err) {
+        console.error("Gagal restore data:", err);
+    }
+}
 
 // --- 3. FUNGSI WAKTU & INFO (Script Pertama Abang) ---
 function formatAMPM() {
@@ -288,32 +318,87 @@ window.addEventListener('load', () => {
         document.getElementById('menuUtama').style.display = "none";
     }
 });
-      function logout() {
-    // 1. Identitas User
-    localStorage.removeItem('user_aktif');
+      async function backupDanLogout() {
+    const konfirmasi = confirm("Simpan semua data dan settingan ke Google Drive sebelum keluar?");
+    if (!konfirmasi) return;
 
-    // 2. Daftar data transaksi yang mau dikosongkan
-    const dataRahasia = [
-        'database_pemasukan',
-        'db_bulanan_umkm',
-        'db_keluar',
-        'db_laporan_laba',
-        'history_bulanan_cloud',
-        'modal_awal',
-        'setting_persen_umkm'    // Karena investor pakai localStorage terpisah
+    // Daftar semua kunci yang Abang kasih tadi
+    const keysToBackup = [
+        'setting_persen_umkm', 'savedSignature', 'modal_awal', 'img', 
+        'db_keluar', 'database_pemasukan', 'counter3', 'NamaUsahaku', 
+        'NOMOR_REK', 'NAMA_PRIBADI', 'KETRANGAN_USAHA', 'ALAMAT_USAHA'
     ];
 
-    // Jalankan penghapusan otomatis untuk daftar di atas
-    dataRahasia.forEach(key => localStorage.removeItem(key));
+    // 1. Ambil semua data dan bungkus jadi satu objek
+    let backupData = {};
+    keysToBackup.forEach(key => {
+        const value = localStorage.getItem(key);
+        if (value) {
+            // Kita simpan apa adanya (baik string biasa atau JSON string)
+            backupData[key] = value;
+        }
+    });
 
-    // 3. Reset dan Segarkan
-    accessToken = null;
-    location.reload();
+    try {
+        console.log("Memulai Backup ke Drive...");
+        const fileName = 'catetanduit_backup_total.json';
+        
+        // Cari apakah file sudah ada
+        const searchRes = await fetch(`https://www.googleapis.com/drive/v3/files?q=name='${fileName}' and trashed=false`, {
+            headers: { 'Authorization': 'Bearer ' + accessToken }
+        });
+        const searchData = await searchRes.json();
+
+        let method = 'POST';
+        let url = 'https://www.googleapis.com/upload/drive/v3/files?uploadType=media';
+
+        if (searchData.files && searchData.files.length > 0) {
+            // Kalau file sudah ada, kita update (PATCH)
+            method = 'PATCH';
+            url = `https://www.googleapis.com/upload/drive/v3/files/${searchData.files[0].id}?uploadType=media`;
+        } else {
+            // Kalau belum ada, kita buat baru (POST)
+            // Untuk POST simpel, kita perlu metadata dulu, tapi biar simpel kita pakai metadata minimal
+            const metaRes = await fetch('https://www.googleapis.com/drive/v3/files', {
+                method: 'POST',
+                headers: {
+                    'Authorization': 'Bearer ' + accessToken,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ name: fileName, mimeType: 'application/json' })
+            });
+            const metaData = await metaRes.json();
+            url = `https://www.googleapis.com/upload/drive/v3/files/${metaData.id}?uploadType=media`;
+            method = 'PATCH';
+        }
+
+        // 2. Kirim data ke Drive
+        await fetch(url, {
+            method: method,
+            headers: {
+                'Authorization': 'Bearer ' + accessToken,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(backupData)
+        });
+
+        alert("Backup Berhasil! Data aman di Drive.");
+
+        // 3. SAPU BERSIH TOTAL
+        localStorage.clear();
+        accessToken = null;
+        location.reload();
+
+    } catch (err) {
+        console.error("Gagal backup:", err);
+        alert("Waduh, gagal backup Bang. Coba cek koneksi.");
+    }
 }
     </script>
 </body>
 
 </html>
+
 
 
 
