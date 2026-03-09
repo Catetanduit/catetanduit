@@ -177,27 +177,24 @@ const SCOPES = 'https://www.googleapis.com/auth/drive.file https://www.googleapi
 let tokenClient;
 let accessToken = null;
 
-// --- 2. FUNGSI INISIALISASI ---
 function initClient() {
     tokenClient = google.accounts.oauth2.initTokenClient({
         client_id: CLIENT_ID,
         scope: SCOPES,
         callback: async (res) => {
-    accessToken = res.access_token;
-    
-    // 1. Ambil Nama & Foto Profil
-    await ambilProfilUser(); 
-    
-    // 2. Tarik koper data dari Drive (PENTING!)
-    await restoreDataOtomatis(); 
-    
-    // 3. Setelah data beres ditarik, baru buka layarnya
-    if(document.getElementById('layarLogin')) document.getElementById('layarLogin').style.display = "none";
-    if(document.getElementById('menuUtama')) document.getElementById('menuUtama').style.display = "block";
-    
-    // 4. Update tampilan angka dashboard
-    updateRingkasanDashboard();
-},
+            if (res.error) return;
+            accessToken = res.access_token;
+            // Simpan token sementara biar kalau pindah halaman/refresh gak langsung hilang
+            sessionStorage.setItem('temp_token', accessToken); 
+            
+            await ambilProfilUser();  
+            await restoreDataOtomatis();  
+            
+            if(document.getElementById('layarLogin')) document.getElementById('layarLogin').style.display = "none";
+            if(document.getElementById('menuUtama')) document.getElementById('menuUtama').style.display = "block";
+            
+            updateRingkasanDashboard();
+        },
     });
 }
 
@@ -330,46 +327,46 @@ window.addEventListener('load', () => {
     }
 });
       async function backupDanLogout() {
+    // Ambil token dari memori jika variabel global kosong (karena refresh)
+    if (!accessToken) accessToken = sessionStorage.getItem('temp_token');
+
+    if (!accessToken) {
+        alert("Sesi habis, silakan login ulang lewat tombol Masuk.");
+        return;
+    }
+
     const konfirmasi = confirm("Simpan semua data dan settingan ke Google Drive sebelum keluar?");
     if (!konfirmasi) return;
 
-    // Daftar semua kunci yang Abang kasih tadi
     const keysToBackup = [
         'setting_persen_umkm', 'savedSignature', 'modal_awal', 'img', 
         'db_keluar', 'database_pemasukan', 'counter3', 'NamaUsahaku', 
-        'NOMOR_REK', 'NAMA_PRIBADI', 'KETRANGAN_USAHA', 'ALAMAT_USAHA'
+        'NOMOR_REK', 'NAMA_PRIBADI', 'KETRANGAN_USAHA', 'ALAMAT_USAHA', 'user_aktif'
     ];
 
-    // 1. Ambil semua data dan bungkus jadi satu objek
     let backupData = {};
     keysToBackup.forEach(key => {
         const value = localStorage.getItem(key);
-        if (value) {
-            // Kita simpan apa adanya (baik string biasa atau JSON string)
-            backupData[key] = value;
-        }
+        if (value) backupData[key] = value;
     });
 
     try {
         console.log("Memulai Backup ke Drive...");
         const fileName = 'catetanduit_backup_total.json';
         
-        // Cari apakah file sudah ada
         const searchRes = await fetch(`https://www.googleapis.com/drive/v3/files?q=name='${fileName}' and trashed=false`, {
             headers: { 'Authorization': 'Bearer ' + accessToken }
         });
+        
+        if (searchRes.status === 401) throw new Error("Token Kedaluwarsa");
+        
         const searchData = await searchRes.json();
-
-        let method = 'POST';
-        let url = 'https://www.googleapis.com/upload/drive/v3/files?uploadType=media';
+        let method, url;
 
         if (searchData.files && searchData.files.length > 0) {
-            // Kalau file sudah ada, kita update (PATCH)
             method = 'PATCH';
             url = `https://www.googleapis.com/upload/drive/v3/files/${searchData.files[0].id}?uploadType=media`;
         } else {
-            // Kalau belum ada, kita buat baru (POST)
-            // Untuk POST simpel, kita perlu metadata dulu, tapi biar simpel kita pakai metadata minimal
             const metaRes = await fetch('https://www.googleapis.com/drive/v3/files', {
                 method: 'POST',
                 headers: {
@@ -383,7 +380,6 @@ window.addEventListener('load', () => {
             method = 'PATCH';
         }
 
-        // 2. Kirim data ke Drive
         await fetch(url, {
             method: method,
             headers: {
@@ -394,21 +390,21 @@ window.addEventListener('load', () => {
         });
 
         alert("Backup Berhasil! Data aman di Drive.");
-
-        // 3. SAPU BERSIH TOTAL
         localStorage.clear();
+        sessionStorage.clear(); // Bersihkan token juga
         accessToken = null;
         location.reload();
 
     } catch (err) {
         console.error("Gagal backup:", err);
-        alert("Waduh, gagal backup Bang. Coba cek koneksi.");
+        alert("Gagal backup. Silakan login ulang dan coba lagi.");
     }
 }
     </script>
 </body>
 
 </html>
+
 
 
 
