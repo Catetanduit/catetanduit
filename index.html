@@ -289,19 +289,32 @@ window.addEventListener('load', () => {
     }
 });
       function logout() {
-    // 1. Hapus data user dari memori HP
+    // 1. Identitas User
     localStorage.removeItem('user_aktif');
-    
-    // 2. Kosongkan variabel akses token (biar bersih total)
-    accessToken = null;
 
-    // 3. Refresh halaman biar balik ke layar login
+    // 2. Daftar data transaksi yang mau dikosongkan
+    const dataRahasia = [
+        'database_pemasukan',
+        'db_bulanan_umkm',
+        'db_keluar',
+        'db_laporan_laba',
+        'history_bulanan_cloud',
+        'modal_awal',
+        'setting_persen_umkm'    // Karena investor pakai localStorage terpisah
+    ];
+
+    // Jalankan penghapusan otomatis untuk daftar di atas
+    dataRahasia.forEach(key => localStorage.removeItem(key));
+
+    // 3. Reset dan Segarkan
+    accessToken = null;
     location.reload();
 }
     </script>
 </body>
 
 </html>
+
 
 
 
