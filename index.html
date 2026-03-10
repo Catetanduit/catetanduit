@@ -182,11 +182,22 @@ function initClient() {
         client_id: CLIENT_ID,
         scope: SCOPES,
         callback: async (res) => {
-            if (res.error) return;
-            accessToken = res.access_token;
-            // Simpan token sementara biar kalau pindah halaman/refresh gak langsung hilang
-            sessionStorage.setItem('temp_token', accessToken); 
+            console.log("Cek Respon Google:", res); // Alat deteksi 1
+
+            if (res.error) {
+                console.error("Login Gagal:", res.error);
+                return;
+            }
             
+            accessToken = res.access_token;
+
+            // --- INI PIPA PENYAMBUNGNYA ---
+            if (accessToken) {
+                sessionStorage.setItem('temp_token', accessToken);
+                console.log("Token berhasil disimpan di Session Storage!"); // Alat deteksi 2
+            }
+            // ------------------------------
+
             await ambilProfilUser();  
             await restoreDataOtomatis();  
             
@@ -406,6 +417,7 @@ window.addEventListener('load', () => {
 </body>
 
 </html>
+
 
 
 
