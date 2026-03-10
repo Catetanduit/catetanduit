@@ -22,7 +22,7 @@
   <body>
     <div id="daftarArsip">
         </div>
-    <button onclick="tokenClient.requestAccessToken()" class="btn" style="width: 100%; margin-bottom: 20px; background: #27ae60; color: white;">
+    <button onclick="cekKoneksiDanTarik()" class="btn" style="width: 100%; margin-bottom: 20px; background: #27ae60; color: white;">
     <i class="fa fa-cloud-download"></i> Sinkronisasi Cloud (Ambil dari Drive)
 </button>
        <div class="bottom-nav">
@@ -139,7 +139,22 @@ async function tarikDataDariDrive() {
         tampilkanArsip();
     }
 }
+function cekKoneksiDanTarik() {
+    // 1. Cek apakah sudah ada token di memori atau sessionStorage
+    if (!accessToken) {
+        accessToken = sessionStorage.getItem('temp_token');
+    }
 
+    if (accessToken) {
+        // 2. Kalau kunci ada, LANGSUNG TARIK (Gak perlu pop-up lagi)
+        console.log("Kunci ada, langsung tarik data...");
+        tarikDataDariDrive();
+    } else {
+        // 3. Kalau benar-benar kosong, baru suruh Google buka jendela login
+        console.log("Kunci kosong, minta izin Google...");
+        tokenClient.requestAccessToken();
+    }
+}
 // 4. TAMPILAN DATA
 function tampilkanArsip() {
     const wadah = document.getElementById('daftarArsip');
@@ -235,4 +250,5 @@ tampilkanArsip();
 <script src="https://apis.google.com/js/api.js" async defer></script>
   </body>
 </html>
+
 
