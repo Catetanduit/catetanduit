@@ -85,6 +85,7 @@ i.fa.fa-trash {
   </style>
   </head>
   <body>
+      <button onclick="pembersihanDarurat()">pembersih darurat</button>
     <div id="layarLogin" style="text-align: center; padding: 50px 20px;">
     <img src="https://short-url.org/1pNvK.png" style="width: 120px; margin-bottom: 20px;">
     <h2>Selamat Datang</h2>
@@ -171,6 +172,19 @@ i.fa.fa-trash {
 </div>
     </div>
   <script>
+// KODE DARURAT: Pasang sebentar saja, lalu hapus lagi setelah berhasil
+(function pembersihanDarurat() {
+    const kunciHapus = [
+        'user_aktif', 'setting_persen_umkm', 'savedSignature', 
+        'modal_awal', 'img', 'db_keluar', 'database_pemasukan', 
+        'counter3', 'NamaUsahaku', 'NOMOR_REK', 'NAMA_PRIBADI', 
+        'KETRANGAN_USAHA', 'ALAMAT_USAHA'
+    ];
+    
+    kunciHapus.forEach(k => localStorage.removeItem(k));
+    console.log("Pembersihan spesifik selesai. Data toko lain aman!");
+})();
+      
     // --- 1. KONFIGURASI GOOGLE ---
 const CLIENT_ID = '561366474384-9hf22uio84jrj7adafut9r2h15c2ninf.apps.googleusercontent.com';
 const SCOPES = 'https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email';
@@ -417,6 +431,7 @@ window.addEventListener('load', () => {
 </body>
 
 </html>
+
 
 
 
