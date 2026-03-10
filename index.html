@@ -328,7 +328,9 @@ window.addEventListener('load', () => {
 });
       async function backupDanLogout() {
     // Ambil token dari memori jika variabel global kosong (karena refresh)
-    if (!accessToken) accessToken = sessionStorage.getItem('temp_token');
+    if (!accessToken) {
+        accessToken = sessionStorage.getItem('temp_token');
+    }
 
     if (!accessToken) {
         alert("Sesi habis, silakan login ulang lewat tombol Masuk.");
@@ -404,6 +406,7 @@ window.addEventListener('load', () => {
 </body>
 
 </html>
+
 
 
 
