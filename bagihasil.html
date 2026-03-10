@@ -371,12 +371,19 @@ function simpanLaporanLaba() {
         else { historyLama.unshift(ringkasanHistory); }
         localStorage.setItem('history_bulanan_cloud', JSON.stringify(historyLama));
 
-        // --- CLOUD SAVE ---
-        if (!accessToken) {
-            tokenClient.requestAccessToken();
-        } else {
-            eksekusiSimpanKeDrive();
-        }
+        // --- CLOUD SAVE (OTOMATIS & SILENT) ---
+// Cek apakah ada token di memori atau di sessionStorage
+if (!accessToken) accessToken = sessionStorage.getItem('temp_token');
+
+if (accessToken) {
+    // Jika ada token, langsung eksekusi tanpa nanya-nanya
+    eksekusiSimpanKeDrive();
+} else {
+    // Jika benar-benar kosong (misal baru pertama buka & belum login sama sekali)
+    // Barulah kita minta login
+    console.log("User belum login, meminta akses token...");
+    tokenClient.requestAccessToken();
+}
 
         tampilkanModal("<b>Mantap Bang!</b><br>Arsip bulan " + namaBulan + " sudah diperbarui.");
     }
@@ -393,34 +400,42 @@ function tutupModal() {
 }
 
 async function eksekusiSimpanKeDrive() {
+    // 1. Ambil token dari memori atau cadangan
+    if (!accessToken) accessToken = sessionStorage.getItem('temp_token');
+    
+    // Jika benar-benar tidak ada, kita log saja (user mungkin belum login Google)
+    if (!accessToken) {
+        console.warn("Sinkron Bagi Hasil tertunda: Token tidak ditemukan.");
+        return;
+    }
+
     let dbLaporan = JSON.parse(localStorage.getItem('db_laporan_laba')) || [];
     if (dbLaporan.length === 0) return;
 
-    // Ambil data terakhir yang baru saja kita simpan/update di LocalStorage
     let tgl = new Date();
     let namaBulan = tgl.toLocaleString('id-ID', { month: 'long', year: 'numeric' });
     let dataTerakhir = dbLaporan.find(item => item.bulan === namaBulan);
-    
     let namaFile = 'Laporan_Lengkap_' + namaBulan.replace(/\s/g, '_') + '.json';
 
     try {
-        // 1. Cari apakah file bulan ini sudah ada di Drive
+        console.log("Mengirim Laporan Lengkap ke Cloud...");
+        
         const cari = await fetch(`https://www.googleapis.com/drive/v3/files?q=name='${namaFile}' and trashed=false`, {
             headers: { 'Authorization': 'Bearer ' + accessToken }
         });
         const hasilCari = await cari.json();
 
+        // Jika file sudah ada, kita PATCH (Update)
         if (hasilCari.files && hasilCari.files.length > 0) {
-            // 2. JIKA ADA: Timpa isinya (Update)
             let fileId = hasilCari.files[0].id;
             await fetch(`https://www.googleapis.com/upload/drive/v3/files/${fileId}?uploadType=media`, {
                 method: 'PATCH',
                 headers: { 'Authorization': 'Bearer ' + accessToken, 'Content-Type': 'application/json' },
                 body: JSON.stringify(dataTerakhir)
             });
-            console.log("Berhasil Update Arsip Cloud: " + namaFile);
+            console.log("Update Laporan Cloud Berhasil: " + namaFile);
         } else {
-            // 3. JIKA BELUM ADA: Bikin baru (POST)
+            // Jika belum ada, kita POST (Buat Baru)
             const metadata = { 'name': namaFile, 'mimeType': 'application/json' };
             const formData = new FormData();
             formData.append('metadata', new Blob([JSON.stringify(metadata)], {type: 'application/json'}));
@@ -431,11 +446,10 @@ async function eksekusiSimpanKeDrive() {
                 headers: { 'Authorization': 'Bearer ' + accessToken },
                 body: formData
             });
-            console.log("Berhasil Buat Arsip Cloud Baru: " + namaFile);
+            console.log("Buat Laporan Cloud Baru Berhasil: " + namaFile);
         }
     } catch (err) {
-        console.error("Gagal Cloud:", err);
-        tampilkanModal("<b>Gagal Cloud!</b><br>Cek koneksi, tapi data di HP sudah aman kok.");
+        console.error("Gagal Sinkron Laporan:", err);
     }
 }
    
@@ -447,5 +461,6 @@ updateTampilanModal(); // Fungsi modal yang kemarin juga tetap dipanggil
 <script src="https://apis.google.com/js/api.js" async defer></script>
 </body>
 </html>
+
 
 
