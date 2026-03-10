@@ -78,41 +78,55 @@ function initClient() {
         scope: SCOPES,
         callback: (res) => { 
             accessToken = res.access_token; 
+            // SIMPAN KUNCI KE KANTUNG CADANGAN
+            sessionStorage.setItem('temp_token', accessToken);
             tarikHistoryDrive(); 
         }
     });
+
+    // --- CEK APAKAH SUDAH LOGIN SEBELUMNYA ---
+    accessToken = sessionStorage.getItem('temp_token');
+    if (accessToken) {
+        console.log("Token ditemukan, langsung memuat history...");
+        tarikHistoryDrive();
+    }
 }
 
 // --- 2. FUNGSI AMBIL DATA DARI DRIVE ---
 async function tarikHistoryDrive() {
-    // 1. CEK: Apakah kita sudah punya akses (Token)?
+    // 1. Ambil token dari cadangan jika global kosong
+    if (!accessToken) accessToken = sessionStorage.getItem('temp_token');
+
+    // Jika benar-benar tidak ada kunci, baru suruh login
     if (!accessToken) {
-        // Kalau belum ada kunci, panggil Google buat minta izin
-        // Setelah user pilih akun, fungsi callback (initClient) akan jalan
-        // Tips: Pastikan di callback initClient Abang memanggil tarikHistoryDrive() lagi
-        tokenClient.requestAccessToken();
-        return; // Berhenti dulu di sini, nanti lanjut lagi setelah dapat token
+        const wadah = document.getElementById('wadahHistory');
+        wadah.innerHTML = `
+            <div style="text-align:center; padding:40px;">
+                <p style="color:#7f8c8d;">Silakan hubungkan ke Google Drive untuk melihat history cloud.</p>
+                <button class="btn-utama" onclick="tokenClient.requestAccessToken()" style="padding:10px 20px; cursor:pointer;">
+                    <i class="fa fa-google"></i> Hubungkan Sekarang
+                </button>
+            </div>`;
+        return;
     }
 
     const wadah = document.getElementById('wadahHistory');
-    
-    // Tampilan Loading
     wadah.innerHTML = `
         <div style="text-align:center; padding:40px; color:#7f8c8d;">
             <i class="fa fa-sync-alt fa-spin" style="font-size:2rem; color:#27ae60;"></i><br><br>
-            <span style="font-size:0.9rem;">Menghubungkan ke Drive...</span>
+            <span style="font-size:0.9rem;">Menyusun data dari Cloud...</span>
         </div>`;
     
     try {
-        // 2. JALANKAN PROSES TARIK DATA (Karena sudah pasti punya token)
         const response = await fetch(`https://www.googleapis.com/drive/v3/files?q=name contains 'Daily_Log_' and trashed=false&fields=files(id, name)`, {
             headers: { 'Authorization': 'Bearer ' + accessToken }
         });
         
-        // Cek jika token tiba-tiba expired di tengah jalan (Unauthorized)
+        // Cek jika token basi (401)
         if (response.status === 401) {
-            accessToken = null; // Hapus token busuknya
-            tokenClient.requestAccessToken(); // Minta baru
+            sessionStorage.removeItem('temp_token');
+            accessToken = null;
+            tokenClient.requestAccessToken();
             return;
         }
 
@@ -121,25 +135,35 @@ async function tarikHistoryDrive() {
 
         if (files && files.length > 0) {
             let gabunganSemuaHari = [];
+            
+            // Loop ambil isi tiap file bulanan
             for (let file of files) {
                 const fileRes = await fetch(`https://www.googleapis.com/drive/v3/files/${file.id}?alt=media`, {
                     headers: { 'Authorization': 'Bearer ' + accessToken }
                 });
                 const isiFile = await fileRes.json();
+                
+                // Pastikan masuk ke array besar
                 if (Array.isArray(isiFile)) {
                     gabunganSemuaHari = gabunganSemuaHari.concat(isiFile);
                 } else {
                     gabunganSemuaHari.push(isiFile);
                 }
             }
+            
+            // Urutkan dari yang terbaru (berdasarkan ID/Timestamp)
             gabunganSemuaHari.sort((a, b) => b.id - a.id);
+            
+            // Tampilkan ke tabel
             tampilkanTabelMinimalis(gabunganSemuaHari); 
+            console.log("History berhasil ditarik: " + gabunganSemuaHari.length + " entri.");
+            
         } else {
-            wadah.innerHTML = "<p style='text-align:center; padding:20px; color:#999;'>Belum ada data di Cloud Drive.</p>";
+            wadah.innerHTML = "<p style='text-align:center; padding:20px; color:#999;'>Belum ada data history di Cloud Drive.</p>";
         }
     } catch (err) {
         console.error(err);
-        wadah.innerHTML = "<p style='text-align:center; padding:20px;'>Gagal memuat data. Coba klik Sinkron lagi.</p>";
+        wadah.innerHTML = "<p style='text-align:center; padding:20px;'>Gagal memuat data. Periksa koneksi internet Abang.</p>";
     }
 }
 
