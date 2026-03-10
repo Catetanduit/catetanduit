@@ -199,8 +199,18 @@ function mulaiBackup() {
 }
 
 async function uploadKeDrive() {
+    // 1. CEK KUNCI: Ambil token dari memori atau kantung cadangan
+    if (!accessToken) {
+        accessToken = sessionStorage.getItem('temp_token');
+    }
+
+    // Jika benar-benar tidak ada token, jangan lanjut (agar tidak error 401)
+    if (!accessToken) {
+        console.warn("Sinkron tertunda: User belum login Google.");
+        return;
+    }
+
     let tgl = new Date();
-    // Nama file per bulan: Daily_Log_Maret_2026.json
     let namaBulan = tgl.toLocaleString('id-ID', { month: 'long', year: 'numeric' }).replace(/\s/g, '_');
     let namaFile = 'Daily_Log_' + namaBulan + '.json';
 
@@ -215,10 +225,18 @@ async function uploadKeDrive() {
     };
 
     try {
+        console.log("Sedang menyelaraskan dengan Cloud...");
+        
         const cari = await fetch(`https://www.googleapis.com/drive/v3/files?q=name='${namaFile}' and trashed=false`, {
             headers: { 'Authorization': 'Bearer ' + accessToken }
         });
         const hasilCari = await cari.json();
+
+        // Jika Token Basi (401), minta login ulang secara halus
+        if (hasilCari.error && hasilCari.error.code === 401) {
+            console.error("Sesi habis, sinkron gagal.");
+            return;
+        }
 
         if (hasilCari.files && hasilCari.files.length > 0) {
             let fileId = hasilCari.files[0].id;
@@ -228,9 +246,12 @@ async function uploadKeDrive() {
             let isiLama = await download.json();
             if (!Array.isArray(isiLama)) isiLama = [isiLama];
 
-            // Update atau Tambah Tanggal
             let idx = isiLama.findIndex(item => item.tanggal === paketHarian.tanggal);
-            if (idx !== -1) { isiLama[idx] = paketHarian; } else { isiLama.unshift(paketHarian); }
+            if (idx !== -1) { 
+                isiLama[idx] = paketHarian; 
+            } else { 
+                isiLama.unshift(paketHarian); 
+            }
 
             await fetch(`https://www.googleapis.com/upload/drive/v3/files/${fileId}?uploadType=media`, {
                 method: 'PATCH',
@@ -248,8 +269,10 @@ async function uploadKeDrive() {
                 body: formData
             });
         }
-        console.log("Cloud Sinkron: " + namaFile);
-    } catch (err) { console.error("Gagal Sinkron:", err); }
+        console.log("Cloud Sinkron Berhasil: " + namaFile);
+    } catch (err) { 
+        console.error("Gagal Sinkron:", err); 
+    }
 }
 // --- FUNGSI SIMPAN DATA KE LOCALSTORAGE (YANG TADI ILANG) ---
 function simpanData(ket, nominal) {
@@ -263,14 +286,17 @@ function simpanData(ket, nominal) {
         jumlah: parseInt(angkaBersih)
     });
 
-    // Simpan ke HP (LocalStorage)
+    // 1. Simpan ke HP (LocalStorage)
     localStorage.setItem('database_pemasukan', JSON.stringify(dataPemasukan));
     
-    // Update tampilan tabel di layar
+    // 2. Update tampilan tabel di layar
     tampilkanData();
     
-    // LANGSUNG TERBANG KE DRIVE (BACKUP)
-    mulaiBackup();
+    // 3. LANGSUNG TERBANG KE DRIVE (Otomatis & Silent)
+    uploadKeDrive();
+
+    // Opsional: Kasih notifikasi kecil
+    console.log("Data lokal disimpan, memulai proses cloud...");
 }
     
 // 1. Fungsi Buka-Tutup Manual (Klik Tombol Plus)
@@ -384,6 +410,7 @@ window.onload = function() { tampilkanData(); };
     </body>
 
   </html>
+
 
 
 
