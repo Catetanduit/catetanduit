@@ -414,9 +414,77 @@ window.addEventListener('load', () => {
     }
 }
     </script>
+      <script>
+// --- MESIN INDUK SINKRONISASI (Taruh di index.html) ---
+async function kirimKeDrive(namaFile, dataObjek) {
+    // 1. Ambil token (dari variabel global atau kantung cadangan)
+    if (!accessToken) {
+        accessToken = sessionStorage.getItem('temp_token');
+    }
+
+    // Jika tetap tidak ada, berarti user belum login Google
+    if (!accessToken) {
+        console.warn("Sinkron tertunda: Token tidak ditemukan. User mungkin belum login.");
+        return;
+    }
+
+    try {
+        console.log(`[Cloud] Menyelaraskan ${namaFile}...`);
+
+        // 2. Cari apakah file sudah ada di Drive
+        const searchRes = await fetch(`https://www.googleapis.com/drive/v3/files?q=name='${namaFile}' and trashed=false`, {
+            headers: { 'Authorization': 'Bearer ' + accessToken }
+        });
+        const searchData = await searchRes.json();
+
+        let method = 'POST';
+        let url = 'https://www.googleapis.com/upload/drive/v3/files?uploadType=media';
+
+        if (searchData.files && searchData.files.length > 0) {
+            // Jika file sudah ada, gunakan metode PATCH (Update)
+            method = 'PATCH';
+            url = `https://www.googleapis.com/upload/drive/v3/files/${searchData.files[0].id}?uploadType=media`;
+        } else {
+            // Jika file belum ada, buat dulu metadatanya (POST)
+            const metaRes = await fetch('https://www.googleapis.com/drive/v3/files', {
+                method: 'POST',
+                headers: {
+                    'Authorization': 'Bearer ' + accessToken,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ name: namaFile, mimeType: 'application/json' })
+            });
+            const metaData = await metaRes.json();
+            url = `https://www.googleapis.com/upload/drive/v3/files/${metaData.id}?uploadType=media`;
+            method = 'PATCH'; // Setelah ID didapat, kita upload isinya pakai PATCH
+        }
+
+        // 3. Kirim/Upload data objeknya
+        const uploadRes = await fetch(url, {
+            method: method,
+            headers: {
+                'Authorization': 'Bearer ' + accessToken,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(dataObjek)
+        });
+
+        if (uploadRes.ok) {
+            console.log(`Berhasil Cloud Sync: ${namaFile}`);
+        } else {
+            const errorDtl = await uploadRes.json();
+            console.error("Gagal Upload:", errorDtl);
+        }
+
+    } catch (err) {
+        console.error("Error Koneksi Drive:", err);
+    }
+}
+      </script>
 </body>
 
 </html>
+
 
 
 
