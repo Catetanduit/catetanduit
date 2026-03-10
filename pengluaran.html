@@ -144,21 +144,35 @@ function mulaiBackup() {
 }
 
 async function uploadKeDrive() {
+    // 1. Cek Token (Ambil dari kantung cadangan jika global kosong)
+    if (!accessToken) accessToken = sessionStorage.getItem('temp_token');
+    
+    // Jika user belum login, biarkan simpan di lokal saja dulu
+    if (!accessToken) {
+        console.warn("Sinkron tertunda: User belum login Google.");
+        return;
+    }
+
     let tgl = new Date();
     let namaBulan = tgl.toLocaleString('id-ID', { month: 'long', year: 'numeric' }).replace(/\s/g, '_');
     let namaFile = 'Daily_Log_' + namaBulan + '.json';
 
+    // Ambil data terbaru dari kedua sisi
     let dataMasuk = JSON.parse(localStorage.getItem('database_pemasukan')) || [];
+    let dataKeluar = JSON.parse(localStorage.getItem('db_keluar')) || [];
+    
     let paketHarian = {
         id: Date.now(),
         tanggal: tgl.toLocaleDateString('id-ID'),
         pemasukan: dataMasuk,
-        pengeluaran: JSON.parse(localStorage.getItem('db_keluar')) || [],
+        pengeluaran: dataKeluar,
         totalIn: dataMasuk.reduce((s, i) => s + i.jumlah, 0),
-        totalOut: (JSON.parse(localStorage.getItem('db_keluar')) || []).reduce((s, i) => s + i.jumlah, 0)
+        totalOut: dataKeluar.reduce((s, i) => s + i.jumlah, 0)
     };
 
     try {
+        console.log("Menyelaraskan Pengeluaran ke Cloud...");
+        
         const cari = await fetch(`https://www.googleapis.com/drive/v3/files?q=name='${namaFile}' and trashed=false`, {
             headers: { 'Authorization': 'Bearer ' + accessToken }
         });
@@ -172,8 +186,13 @@ async function uploadKeDrive() {
             let isiLama = await download.json();
             if (!Array.isArray(isiLama)) isiLama = [isiLama];
 
+            // Update data untuk tanggal hari ini di dalam file bulan tersebut
             let idx = isiLama.findIndex(item => item.tanggal === paketHarian.tanggal);
-            if (idx !== -1) { isiLama[idx] = paketHarian; } else { isiLama.unshift(paketHarian); }
+            if (idx !== -1) { 
+                isiLama[idx] = paketHarian; 
+            } else { 
+                isiLama.unshift(paketHarian); 
+            }
 
             await fetch(`https://www.googleapis.com/upload/drive/v3/files/${fileId}?uploadType=media`, {
                 method: 'PATCH',
@@ -181,71 +200,54 @@ async function uploadKeDrive() {
                 body: JSON.stringify(isiLama)
             });
         } else {
+            // Jika file bulan ini belum ada di Drive, buat baru
             const metadata = { 'name': namaFile, 'mimeType': 'application/json' };
             const formData = new FormData();
             formData.append('metadata', new Blob([JSON.stringify(metadata)], {type: 'application/json'}));
             formData.append('file', new Blob([JSON.stringify([paketHarian])], {type: 'application/json'}));
+            
             await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
                 method: 'POST',
                 headers: { 'Authorization': 'Bearer ' + accessToken },
                 body: formData
             });
         }
-        console.log("Cloud Sinkron: " + namaFile);
-    } catch (err) { console.error("Gagal Sinkron:", err); }
+        console.log("Cloud Sinkron Pengeluaran Berhasil!");
+    } catch (err) { 
+        console.error("Gagal Sinkron Pengeluaran:", err); 
+    }
 }
 
 function tambahPengeluaran() {
-
     let ket = document.getElementById('ketKeluar').value;
-
     let nom = parseInt(document.getElementById('nomKeluar').value);
-
     let isModal = document.getElementById('isModal').checked;
-
     let tgl = new Date().toLocaleDateString('id-ID');
 
-
-
     if (ket && nom) {
-
         let dataBaru = {
-
             key: Date.now(),
-
             tanggal: tgl,
-
             keterangan: isModal ? "REKAP MODAL: " + ket : ket,
-
             jumlah: nom,
-
             tipe: isModal ? "modal" : "biasa"
-
         };
 
-
-
+        // 1. Simpan ke Lokal
         dbPengeluaran.unshift(dataBaru);
-
         localStorage.setItem('db_keluar', JSON.stringify(dbPengeluaran));
-
         
-
+        // 2. Bersihkan Form & Update Tabel
         document.getElementById('ketKeluar').value = "";
-
         document.getElementById('nomKeluar').value = "";
-
         tampilkanKeluar();
-
         
-
-        // OTOMATIS BACKUP
-
-        mulaiBackup();
-
+        // 3. SINKRONISASI OTOMATIS KE CLOUD
+        uploadKeDrive();
+    } else {
+        alert("Keterangan dan Nominal harus diisi, Bang!");
     }
-
-}      
+}     
 function tampilkanKeluar() {
     let html = "";
     let total = 0;
@@ -299,5 +301,6 @@ window.onload = function() { tampilkanKeluar(); };
 <script src="https://apis.google.com/js/api.js" async defer></script>
   </body>
 </html>
+
 
 
