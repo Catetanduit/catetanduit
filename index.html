@@ -88,10 +88,10 @@ i.fa.fa-trash {
     <div id="layarLogin" style="text-align: center; padding: 50px 20px;">
     <img src="https://short-url.org/1pNvK.png" style="width: 120px; margin-bottom: 20px;">
     <h2>Selamat Datang</h2>
-    <p>Silakan masuk untuk mengelola keuangan UMKM Abang.</p>
+    <p>Silakan masuk untuk mengelola keuangan.</p>
     <br>
     <button onclick="tokenClient.requestAccessToken()" style="background: white; color: #444; border: 1px solid #ddd; padding: 12px 20px; border-radius: 5px; font-weight: bold; cursor: pointer; display: inline-flex; align-items: center; gap: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-        <img src="https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg" style="width: 20px;">
+        <i aria-hidden="true" class="fa fa-user"></i>
         Masuk dengan Google
     </button>
 </div>
@@ -496,6 +496,7 @@ async function kirimKeDrive(namaFile, dataObjek) {
 </body>
 
 </html>
+
 
 
 
