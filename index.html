@@ -99,8 +99,8 @@ i.fa.fa-trash {
 <div id="menuUtama" style="display: none;">    
   <header style="background:#00a2e9;padding: 10px;padding-top: 0;">
       <span id="sapaanUser"></span>
-    <div id="emailUser"></div>
-    <button onclick="backupDanLogout()" style="margin-top: 10px; background: #e74c3c; color: white; border: none; padding: 5px 15px; border-radius: 5px; cursor: pointer; font-size: 12px;">
+    <div id="emailUser" style="display:none;"></div>
+    <button onclick="backupDanLogout()" style="margin-top: 10px; background: #e74c3c; color: white; border: none; padding: 5px 15px; border-radius: 5px; cursor: pointer; font-size: 12px;position: absolute;right: 10px;top: 0;">
     <i class="fa fa-sign-out-alt"></i> Keluar
 </button>
   <h2 id="tokoku" style="margin: 0;padding: 5px;"></h2>
@@ -170,7 +170,19 @@ i.fa.fa-trash {
 </div>   
 </div>
     </div>
-  <script>     
+  <script> 
+      // KODE DARURAT: Pasang sebentar saja, lalu hapus lagi setelah berhasil
+(function pembersihanDarurat() {
+    const kunciHapus = [
+        'user_aktif', 'setting_persen_umkm', 'savedSignature', 
+        'modal_awal', 'img', 'db_keluar', 'database_pemasukan', 
+        'counter3', 'NamaUsahaku', 'NOMOR_REK', 'NAMA_PRIBADI', 
+        'KETRANGAN_USAHA', 'ALAMAT_USAHA'
+    ];
+    
+    kunciHapus.forEach(k => localStorage.removeItem(k));
+    console.log("Pembersihan spesifik selesai. Data toko lain aman!");
+})();
     // --- 1. KONFIGURASI GOOGLE ---
 const CLIENT_ID = '561366474384-9hf22uio84jrj7adafut9r2h15c2ninf.apps.googleusercontent.com';
 const SCOPES = 'https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email';
@@ -326,7 +338,7 @@ window.addEventListener('load', () => {
         document.getElementById('menuUtama').style.display = "block";
         
         // Pasang nama dan emailnya
-        document.getElementById('sapaanUser').innerText = "Halo, " + userLama.name + "!";
+        document.getElementById('sapaanUser').innerText = "" + userLama.name + "!";
         document.getElementById('emailUser').innerText = userLama.email;
         
         // Update angka-angka dashboard
@@ -484,6 +496,7 @@ async function kirimKeDrive(namaFile, dataObjek) {
 </body>
 
 </html>
+
 
 
 
